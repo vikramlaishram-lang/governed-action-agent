@@ -30,6 +30,16 @@ M2 actions are simulated locally. M3 adds a controlled real local tool boundary 
 
 These tools are only invoked after the policy decision is `ALLOW` and constitutional verification has passed. The boundary blocks secret-like file reads, path traversal outside the governed root, shell execution, production deployment, and destructive filesystem actions. Denied, review-required, and constitutional-violation paths do not invoke tools.
 
+### M3 Commands
+
+```bash
+PYTHONPATH=src python -m pytest -q
+PYTHONPATH=src python demo/run_governed_agent_demo.py
+PYTHONPATH=src python demo/run_m3_controlled_local_tool_demo.py
+```
+
+M3 does not allow secrets access, deployment, deletion, arbitrary shell commands, or network calls.
+
 ## Out Of Scope
 
 - live production deployment

@@ -16,7 +16,12 @@ def simulate_local_action(
         return {
             "execution_status": "NOT_EXECUTED",
             "outcome_status": "BLOCKED",
-            "tool_result": {"tool_name": None, "tool_status": "NOT_INVOKED", "reason": "Constitutional violation"},
+            "tool_result": {
+                "tool_name": None,
+                "tool_executed": False,
+                "tool_status": "NOT_INVOKED",
+                "reason": "Constitutional violation",
+            },
         }
     if decision == "ALLOW":
         tool_result = execute_controlled_tool(root_path, user_request)
@@ -29,16 +34,31 @@ def simulate_local_action(
         return {
             "execution_status": "NOT_EXECUTED",
             "outcome_status": "BLOCKED",
-            "tool_result": {"tool_name": None, "tool_status": "NOT_INVOKED", "reason": "Policy denied request"},
+            "tool_result": {
+                "tool_name": None,
+                "tool_executed": False,
+                "tool_status": "NOT_INVOKED",
+                "reason": "Policy denied request",
+            },
         }
     if decision == "REQUEST_REVIEW":
         return {
             "execution_status": "NOT_EXECUTED",
             "outcome_status": "PENDING_REVIEW",
-            "tool_result": {"tool_name": None, "tool_status": "NOT_INVOKED", "reason": "Human review required"},
+            "tool_result": {
+                "tool_name": None,
+                "tool_executed": False,
+                "tool_status": "NOT_INVOKED",
+                "reason": "Human review required",
+            },
         }
     return {
         "execution_status": "NOT_EXECUTED",
         "outcome_status": "BLOCKED",
-        "tool_result": {"tool_name": None, "tool_status": "NOT_INVOKED", "reason": "Unknown policy decision"},
+        "tool_result": {
+            "tool_name": None,
+            "tool_executed": False,
+            "tool_status": "NOT_INVOKED",
+            "reason": "Unknown policy decision",
+        },
     }

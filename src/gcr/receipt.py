@@ -28,8 +28,10 @@ def create_receipt(
         "execution_authority_claimed": envelope["execution_authority_claimed"],
         "constitutional_errors": constitutional_errors,
         "tool_name": tool_result.get("tool_name"),
+        "tool_executed": tool_result.get("tool_executed", False),
         "tool_status": tool_result.get("tool_status"),
         "tool_summary": _summarize_tool_result(tool_result),
+        "tool_result_summary": _summarize_tool_result(tool_result),
         "record_hash": envelope["record_hash"],
         "created_at": datetime.now(UTC).isoformat(),
     }

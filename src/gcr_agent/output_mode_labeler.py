@@ -9,6 +9,9 @@ def label_output_mode(user_request: str) -> tuple[str, str, bool]:
         return "ACTION_PROPOSAL", "Adversarial self-approval language preserved for verifier detection", True
     if "deploy" in lowered and "production" in lowered:
         return "REVIEW_REQUEST", "Production deployment requires human review", False
-    if any(term in lowered for term in ("read readme.md", ".env", "read", "list files", "git diff", "run tests")):
+    if any(
+        term in lowered
+        for term in ("read readme.md", ".env", "read", "list files", "show files", "git diff", "run tests", "pytest")
+    ):
         return "ACTION_PROPOSAL", "User requested a bounded action proposal", False
     return "PLAN", "No directly executable action was confidently identified", False

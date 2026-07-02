@@ -17,17 +17,19 @@ CONSEQUENCE_CLASSES = {
 
 def classify_consequence(user_request: str) -> str:
     lowered = user_request.lower()
-    if ".env" in lowered or "secret" in lowered:
+    if ".env" in lowered or "secret" in lowered or "credentials" in lowered:
         return "SECRET_ACCESS"
     if "deploy" in lowered and "production" in lowered:
         return "PRODUCTION_STATE_CHANGE"
-    if "delete" in lowered or "rm -rf" in lowered:
+    if "delete" in lowered or "rm -rf" in lowered or "remove file" in lowered:
         return "IRREVERSIBLE_DELETE"
-    if "run tests" in lowered or "pytest" in lowered:
+    if "run tests" in lowered or "pytest" in lowered or "test suite" in lowered:
         return "LOCAL_COMPUTATION"
     if any(term in lowered for term in ("write", "edit", "modify")):
         return "CODE_CHANGE"
-    if "list files" in lowered or "git diff" in lowered or "show diff" in lowered:
+    if "list files" in lowered or lowered.strip() == "ls" or "show files" in lowered:
+        return "READ_ONLY_ACCESS"
+    if "git diff" in lowered or "show diff" in lowered or "status" in lowered:
         return "READ_ONLY_ACCESS"
     if any(term in lowered for term in ("read", "open", "show")):
         return "READ_ONLY_ACCESS"
