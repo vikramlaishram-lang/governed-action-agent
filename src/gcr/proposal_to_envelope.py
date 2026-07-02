@@ -5,8 +5,6 @@ import hashlib
 import json
 from datetime import UTC, datetime
 
-from .policy_engine import DECISION_ENGINE_VERSION, POLICY_VERSION, policy_hash
-
 
 def canonical_json(value: dict) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
@@ -45,13 +43,20 @@ def proposal_to_envelope(
         "consequence_classification": proposal["consequence_class"],
         "evidence_references": proposal["evidence_available"],
         "evidence_gap_summary": proposal["evidence_gaps"],
-        "policy_version": POLICY_VERSION,
-        "policy_hash": policy_hash(),
-        "decision_engine_version": DECISION_ENGINE_VERSION,
+        "policy_version": policy_result["policy_version"],
+        "policy_hash": policy_result["policy_hash"],
+        "decision_engine_version": policy_result["decision_engine_version"],
         "decision": policy_result["decision"],
         "decision_basis": policy_result["decision_basis"],
         "decision_reason": policy_result["decision_reason"],
         "review_status": policy_result["review_status"],
+        "reviewer_authority_id": policy_result.get("reviewer_id"),
+        "reviewer_role": policy_result.get("reviewer_role"),
+        "approval_token_id": policy_result.get("approval_token_id"),
+        "approval_scope": policy_result.get("approval_scope"),
+        "approval_expiry": policy_result.get("approval_expiry"),
+        "approval_valid": policy_result.get("approval_valid", False),
+        "approval_errors": policy_result.get("approval_errors", []),
         "execution_status": "PENDING",
         "outcome_status": "PENDING",
         "tamper_evidence_mode": "sha256_canonical_json",

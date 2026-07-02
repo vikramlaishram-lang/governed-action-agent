@@ -1,0 +1,62 @@
+{
+  "schema_version": "policy_v0.1",
+  "policy_version": "m4-default-policy",
+  "decision_engine_version": "m4-policy-engine",
+  "default_decision": "REQUEST_REVIEW",
+  "rules": {
+    "READ_ONLY_ACCESS": {
+      "decision": "ALLOW",
+      "review_required": false,
+      "review_can_override": false
+    },
+    "LOCAL_COMPUTATION": {
+      "decision": "ALLOW",
+      "review_required": false,
+      "review_can_override": false
+    },
+    "TEXT_GENERATION": {
+      "decision": "ALLOW",
+      "review_required": false,
+      "review_can_override": false
+    },
+    "CODE_CHANGE": {
+      "decision": "REQUEST_REVIEW",
+      "review_required": true,
+      "review_can_override": true,
+      "allowed_reviewer_roles": ["maintainer", "release_manager"]
+    },
+    "WORKFLOW_CHANGE": {
+      "decision": "REQUEST_REVIEW",
+      "review_required": true,
+      "review_can_override": true,
+      "allowed_reviewer_roles": ["maintainer", "release_manager"]
+    },
+    "PRODUCTION_STATE_CHANGE": {
+      "decision": "REQUEST_REVIEW",
+      "review_required": true,
+      "review_can_override": true,
+      "allowed_reviewer_roles": ["release_manager", "security_reviewer"]
+    },
+    "DATA_EXPORT": {
+      "decision": "REQUEST_REVIEW",
+      "review_required": true,
+      "review_can_override": true,
+      "allowed_reviewer_roles": ["security_reviewer"]
+    },
+    "SECRET_ACCESS": {
+      "decision": "DENY",
+      "review_required": false,
+      "review_can_override": false
+    },
+    "IRREVERSIBLE_DELETE": {
+      "decision": "DENY",
+      "review_required": false,
+      "review_can_override": false
+    },
+    "UNKNOWN": {
+      "decision": "REQUEST_REVIEW",
+      "review_required": true,
+      "review_can_override": false
+    }
+  }
+}

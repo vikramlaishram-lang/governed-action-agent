@@ -23,6 +23,14 @@ def create_receipt(
         "consequence_class": envelope["consequence_classification"],
         "decision": envelope["decision"],
         "decision_reason": envelope["decision_reason"],
+        "review_status": envelope["review_status"],
+        "approval_valid": envelope["approval_valid"],
+        "approval_errors": envelope["approval_errors"],
+        "reviewer_id": envelope["reviewer_authority_id"],
+        "reviewer_role": envelope["reviewer_role"],
+        "approval_token_id": envelope["approval_token_id"],
+        "approval_scope": envelope["approval_scope"],
+        "approval_expiry": envelope["approval_expiry"],
         "execution_status": envelope["execution_status"],
         "outcome_status": envelope["outcome_status"],
         "execution_authority_claimed": envelope["execution_authority_claimed"],
@@ -38,6 +46,10 @@ def create_receipt(
 
 
 def _summarize_tool_result(tool_result: dict) -> str:
+    if "tool_result_summary" in tool_result:
+        return tool_result["tool_result_summary"]
+    if "summary" in tool_result:
+        return tool_result["summary"]
     status = tool_result.get("tool_status", "UNKNOWN")
     name = tool_result.get("tool_name") or "no_tool"
     if "reason" in tool_result:

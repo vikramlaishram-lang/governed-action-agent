@@ -11,6 +11,7 @@ def simulate_local_action(
     *,
     root_path: str | Path,
     user_request: str,
+    consequence_class: str,
 ) -> dict:
     if "CONSTITUTIONAL_VIOLATION" in constitutional_errors:
         return {
@@ -24,6 +25,18 @@ def simulate_local_action(
             },
         }
     if decision == "ALLOW":
+        if consequence_class == "PRODUCTION_STATE_CHANGE":
+            return {
+                "execution_status": "EXECUTED",
+                "outcome_status": "SUCCESS",
+                "tool_result": {
+                    "tool_name": "deploy_simulated_review_approved",
+                    "tool_executed": True,
+                    "tool_status": "SUCCESS",
+                    "summary": "review-approved production change simulated; no live deployment performed",
+                    "tool_result_summary": "review-approved production change simulated; no live deployment performed",
+                },
+            }
         tool_result = execute_controlled_tool(root_path, user_request)
         if tool_result["tool_status"] == "BLOCKED":
             return {"execution_status": "NOT_EXECUTED", "outcome_status": "BLOCKED", "tool_result": tool_result}

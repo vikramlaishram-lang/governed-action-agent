@@ -20,7 +20,7 @@ class GovernedAgent:
         self.runtime_id = runtime_id
         self.root_path = Path(root_path or Path.cwd()).resolve()
 
-    def handle_request(self, user_request: str) -> dict:
+    def prepare_request(self, user_request: str) -> dict:
         identity = get_identity_manifest()
         goal_contract = create_goal_contract(user_request)
         output_mode, output_mode_basis, execution_authority_claimed = label_output_mode(user_request)
@@ -34,7 +34,15 @@ class GovernedAgent:
             execution_authority_claimed=execution_authority_claimed,
             consequence_class=consequence_class,
         )
-        policy_result = apply_policy(proposal)
+        return {"goal_contract": goal_contract, "proposal": proposal}
+
+    def evaluate_proposal(
+        self,
+        goal_contract: dict,
+        proposal: dict,
+        review_token: dict | None = None,
+    ) -> dict:
+        policy_result = apply_policy(proposal, review_token=review_token)
         envelope = proposal_to_envelope(proposal, policy_result, runtime_id=self.runtime_id)
         verification_errors = verify_constitutional_invariants(envelope)
 
@@ -42,7 +50,8 @@ class GovernedAgent:
             envelope["decision"],
             verification_errors,
             root_path=self.root_path,
-            user_request=user_request,
+            user_request=goal_contract["user_request"],
+            consequence_class=proposal["consequence_class"],
         )
         envelope["execution_status"] = simulation["execution_status"]
         envelope["outcome_status"] = simulation["outcome_status"]
@@ -57,3 +66,11 @@ class GovernedAgent:
             "tool_result": tool_result,
             "receipt": receipt,
         }
+
+    def handle_request(self, user_request: str, review_token: dict | None = None) -> dict:
+        prepared = self.prepare_request(user_request)
+        return self.evaluate_proposal(
+            prepared["goal_contract"],
+            prepared["proposal"],
+            review_token=review_token,
+        )

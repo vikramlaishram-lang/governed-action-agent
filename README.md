@@ -40,6 +40,34 @@ PYTHONPATH=src python demo/run_m3_controlled_local_tool_demo.py
 
 M3 does not allow secrets access, deployment, deletion, arbitrary shell commands, or network calls.
 
+### M4 Policy File And Review Tokens
+
+M4 adds:
+
+- configurable policy file
+- scoped review token
+- approval validation
+- reviewer-role checks
+- approved simulated production change
+
+M4 still blocks:
+
+- self-authorization
+- secret access
+- destructive delete
+- real deployment
+- arbitrary shell commands
+- network calls
+
+Commands:
+
+```bash
+PYTHONPATH=src python -m pytest -q
+PYTHONPATH=src python demo/run_governed_agent_demo.py
+PYTHONPATH=src python demo/run_m3_controlled_local_tool_demo.py
+PYTHONPATH=src python demo/run_m4_policy_review_token_demo.py
+```
+
 ## Out Of Scope
 
 - live production deployment
