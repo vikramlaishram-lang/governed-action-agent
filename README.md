@@ -68,6 +68,36 @@ PYTHONPATH=src python demo/run_m3_controlled_local_tool_demo.py
 PYTHONPATH=src python demo/run_m4_policy_review_token_demo.py
 ```
 
+### M5 Receipt Ledger And Replay Verifier
+
+M5 adds:
+
+- persistent local receipt ledger
+- append-only JSONL records
+- hash chain
+- replay verifier
+- tamper detection
+- constitutional violation detection during replay
+
+M5 still does not add:
+
+- real production deployment
+- secret access
+- destructive actions
+- network calls
+- cryptographic signing/HMAC
+- remote audit storage
+
+Commands:
+
+```bash
+PYTHONPATH=src python -m pytest -q
+PYTHONPATH=src python demo/run_governed_agent_demo.py
+PYTHONPATH=src python demo/run_m3_controlled_local_tool_demo.py
+PYTHONPATH=src python demo/run_m4_policy_review_token_demo.py
+PYTHONPATH=src python demo/run_m5_receipt_ledger_replay_demo.py
+```
+
 ## Out Of Scope
 
 - live production deployment

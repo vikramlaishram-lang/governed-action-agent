@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "receipt_ledger_record_v0.1.schema.json",
+  "title": "Receipt Ledger Record v0.1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "ledger_record_id",
+    "created_at",
+    "sequence_number",
+    "proposal_id",
+    "agent_id",
+    "receipt",
+    "envelope",
+    "verification_errors",
+    "tool_result",
+    "previous_record_hash",
+    "record_hash"
+  ],
+  "properties": {
+    "schema_version": { "const": "receipt_ledger_record_v0.1" },
+    "ledger_record_id": { "type": "string" },
+    "created_at": { "type": "string" },
+    "sequence_number": { "type": "integer", "minimum": 1 },
+    "proposal_id": { "type": "string" },
+    "agent_id": { "type": "string" },
+    "receipt": { "type": "object" },
+    "envelope": { "type": "object" },
+    "verification_errors": { "type": "array", "items": { "type": "string" } },
+    "tool_result": { "type": "object" },
+    "previous_record_hash": { "type": "string" },
+    "record_hash": { "type": "string" }
+  },
+  "additionalProperties": false
+}
