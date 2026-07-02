@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from gcr.policy_engine import apply_policy
+from gcr.policy_loader import load_policy
 from gcr.proposal_object import create_proposal_object
 from gcr.proposal_to_envelope import proposal_to_envelope
 from gcr.receipt_ledger import ReceiptLedger
@@ -25,9 +26,11 @@ class GovernedAgent:
         ledger_auth_mode: str | None = None,
         ledger_hmac_key: str | None = None,
         ledger_key_id: str | None = None,
+        policy_path: str | Path | None = None,
     ) -> None:
         self.runtime_id = runtime_id
         self.root_path = Path(root_path or Path.cwd()).resolve()
+        self.policy = load_policy(policy_path) if policy_path is not None else None
         self.ledger = (
             ReceiptLedger(
                 ledger_path,
@@ -61,7 +64,7 @@ class GovernedAgent:
         proposal: dict,
         review_token: dict | None = None,
     ) -> dict:
-        policy_result = apply_policy(proposal, review_token=review_token)
+        policy_result = apply_policy(proposal, review_token=review_token, policy=self.policy)
         envelope = proposal_to_envelope(proposal, policy_result, runtime_id=self.runtime_id)
         verification_errors = verify_constitutional_invariants(envelope)
 

@@ -131,6 +131,38 @@ PYTHONPATH=src python demo/run_m5_receipt_ledger_replay_demo.py
 PYTHONPATH=src python demo/run_m6_hmac_signed_ledger_demo.py
 ```
 
+### M7 CLI Packaging And Project Config
+
+M7 adds a local CLI and per-project `.governed-agent/` directory:
+
+```text
+.governed-agent/
+  config.json
+  policy.json
+  ledger.jsonl
+```
+
+CLI commands:
+
+```bash
+PYTHONPATH=src python -m gcr_agent.cli init
+PYTHONPATH=src python -m gcr_agent.cli status
+PYTHONPATH=src python -m gcr_agent.cli ask "Read README.md"
+PYTHONPATH=src python -m gcr_agent.cli ask "Read .env"
+PYTHONPATH=src python -m gcr_agent.cli verify-ledger
+PYTHONPATH=src python -m gcr_agent.cli demo
+```
+
+If installed:
+
+```bash
+gaa init
+gaa ask "Read README.md"
+gaa verify-ledger
+```
+
+M7 still blocks real deployment, secret access, destructive actions, network calls, and arbitrary shell execution.
+
 ## Out Of Scope
 
 - live production deployment

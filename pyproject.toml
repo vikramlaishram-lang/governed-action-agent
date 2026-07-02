@@ -12,6 +12,9 @@ test = [
   "pytest>=8.0.0",
 ]
 
+[project.scripts]
+gaa = "gcr_agent.cli:main"
+
 [build-system]
 requires = ["setuptools>=69.0.0"]
 build-backend = "setuptools.build_meta"
