@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from gcr.policy_engine import apply_policy
 from gcr.proposal_object import create_proposal_object
 from gcr.proposal_to_envelope import proposal_to_envelope
@@ -14,8 +16,9 @@ from .receipt_renderer import render_receipt
 
 
 class GovernedAgent:
-    def __init__(self, runtime_id: str = "local_simulator") -> None:
+    def __init__(self, runtime_id: str = "local_simulator", root_path: str | Path | None = None) -> None:
         self.runtime_id = runtime_id
+        self.root_path = Path(root_path or Path.cwd()).resolve()
 
     def handle_request(self, user_request: str) -> dict:
         identity = get_identity_manifest()
@@ -35,15 +38,22 @@ class GovernedAgent:
         envelope = proposal_to_envelope(proposal, policy_result, runtime_id=self.runtime_id)
         verification_errors = verify_constitutional_invariants(envelope)
 
-        simulation = simulate_local_action(envelope["decision"], verification_errors)
+        simulation = simulate_local_action(
+            envelope["decision"],
+            verification_errors,
+            root_path=self.root_path,
+            user_request=user_request,
+        )
         envelope["execution_status"] = simulation["execution_status"]
         envelope["outcome_status"] = simulation["outcome_status"]
-        receipt = render_receipt(goal_contract, envelope, verification_errors)
+        tool_result = simulation["tool_result"]
+        receipt = render_receipt(goal_contract, envelope, verification_errors, tool_result)
 
         return {
             "goal_contract": goal_contract,
             "proposal": proposal,
             "envelope": envelope,
             "verification_errors": verification_errors,
+            "tool_result": tool_result,
             "receipt": receipt,
         }

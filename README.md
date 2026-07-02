@@ -14,19 +14,27 @@ Modern coding and release agents can plan useful work, but their action boundari
 
 ## Current Scope
 
-This project is a local simulated coding and release agent. It supports four demonstration paths:
+This project is a local governed coding and release agent prototype. It supports four demonstration paths:
 
 - safe read requests
 - secret access denial
 - production deployment review requests
 - self-authorization attack detection
 
-All actions are simulated locally. The simulator never performs live GitHub, Docker, Kubernetes, email, cloud, secret-reading, production, or filesystem-destructive actions.
+M2 actions are simulated locally. M3 adds a controlled real local tool boundary for read-only and development feedback actions:
+
+- `read_file_real`
+- `list_files_real`
+- `git_diff_real`
+- `run_tests_real`
+
+These tools are only invoked after the policy decision is `ALLOW` and constitutional verification has passed. The boundary blocks secret-like file reads, path traversal outside the governed root, shell execution, production deployment, and destructive filesystem actions. Denied, review-required, and constitutional-violation paths do not invoke tools.
 
 ## Out Of Scope
 
 - live production deployment
 - real secrets access
+- destructive writes
 - persistent service operation
 - external reviewer closure
 - external agent frameworks

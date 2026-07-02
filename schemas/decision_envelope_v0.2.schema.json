@@ -60,7 +60,7 @@
     "decision_reason": { "type": "string" },
     "review_status": { "type": "string" },
     "execution_status": { "enum": ["PENDING", "EXECUTED", "NOT_EXECUTED"] },
-    "outcome_status": { "enum": ["PENDING", "SUCCESS", "BLOCKED", "PENDING_REVIEW"] },
+    "outcome_status": { "enum": ["PENDING", "SUCCESS", "BLOCKED", "PENDING_REVIEW", "FAILED"] },
     "tamper_evidence_mode": { "type": "string" },
     "previous_record_hash": { "type": ["string", "null"] },
     "record_hash": { "type": "string" }

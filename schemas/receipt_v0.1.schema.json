@@ -19,6 +19,9 @@
     "outcome_status",
     "execution_authority_claimed",
     "constitutional_errors",
+    "tool_name",
+    "tool_status",
+    "tool_summary",
     "record_hash",
     "created_at"
   ],
@@ -38,6 +41,9 @@
     "outcome_status": { "type": "string" },
     "execution_authority_claimed": { "type": "boolean" },
     "constitutional_errors": { "type": "array", "items": { "type": "string" } },
+    "tool_name": { "type": ["string", "null"] },
+    "tool_status": { "type": "string" },
+    "tool_summary": { "type": "string" },
     "record_hash": { "type": "string" },
     "created_at": { "type": "string" }
   },
