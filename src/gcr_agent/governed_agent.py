@@ -22,10 +22,22 @@ class GovernedAgent:
         runtime_id: str = "local_simulator",
         root_path: str | Path | None = None,
         ledger_path: str | Path | None = None,
+        ledger_auth_mode: str | None = None,
+        ledger_hmac_key: str | None = None,
+        ledger_key_id: str | None = None,
     ) -> None:
         self.runtime_id = runtime_id
         self.root_path = Path(root_path or Path.cwd()).resolve()
-        self.ledger = ReceiptLedger(ledger_path) if ledger_path is not None else None
+        self.ledger = (
+            ReceiptLedger(
+                ledger_path,
+                auth_mode=ledger_auth_mode,
+                hmac_key=ledger_hmac_key,
+                key_id=ledger_key_id,
+            )
+            if ledger_path is not None
+            else None
+        )
 
     def prepare_request(self, user_request: str) -> dict:
         identity = get_identity_manifest()

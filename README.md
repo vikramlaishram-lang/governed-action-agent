@@ -98,6 +98,39 @@ PYTHONPATH=src python demo/run_m4_policy_review_token_demo.py
 PYTHONPATH=src python demo/run_m5_receipt_ledger_replay_demo.py
 ```
 
+### M6 HMAC Signed Ledger Verification
+
+M6 adds:
+
+- HMAC-SHA256 ledger authentication
+- key_id
+- record_mac
+- keyed replay verification
+- wrong-key rejection
+- recomputed-hash tamper detection
+- production guard requiring HMAC mode
+
+M6 still does not add:
+
+- real production deployment
+- secret access
+- destructive actions
+- network calls
+- cloud KMS
+- public-key signatures
+- remote notarization
+
+Commands:
+
+```bash
+PYTHONPATH=src python -m pytest -q
+PYTHONPATH=src python demo/run_governed_agent_demo.py
+PYTHONPATH=src python demo/run_m3_controlled_local_tool_demo.py
+PYTHONPATH=src python demo/run_m4_policy_review_token_demo.py
+PYTHONPATH=src python demo/run_m5_receipt_ledger_replay_demo.py
+PYTHONPATH=src python demo/run_m6_hmac_signed_ledger_demo.py
+```
+
 ## Out Of Scope
 
 - live production deployment

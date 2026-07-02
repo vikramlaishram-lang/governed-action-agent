@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .receipt_ledger import ledger_record_hash
+from .ledger_auth import HMAC_SHA256_V1, UNKEYED_HASH_CHAIN, compute_record_hash, verify_record_mac
 from .verify_envelope_chain import verify_constitutional_invariants
 
 
@@ -19,12 +19,15 @@ def replay_records(path: str | Path) -> list[dict]:
     return records
 
 
-def verify_ledger(path: str | Path) -> dict:
+def verify_ledger(path: str | Path, *, hmac_key: str | None = None, expected_key_id: str | None = None) -> dict:
     ledger_path = Path(path)
     errors: list[str] = []
     integrity_errors: list[str] = []
     decision_counts: dict[str, int] = {}
     constitutional_violation_count = 0
+    hmac_record_count = 0
+    unkeyed_record_count = 0
+    auth_modes_seen: list[str] = []
     records: list[dict] = []
 
     if not ledger_path.exists() or ledger_path.read_text(encoding="utf-8") == "":
@@ -36,6 +39,9 @@ def verify_ledger(path: str | Path) -> dict:
             "constitutional_violation_count": 0,
             "first_hash": None,
             "latest_hash": None,
+            "hmac_record_count": 0,
+            "unkeyed_record_count": 0,
+            "auth_modes_seen": [],
         }
 
     with ledger_path.open("r", encoding="utf-8") as handle:
@@ -67,8 +73,36 @@ def verify_ledger(path: str | Path) -> dict:
             error = f"PREVIOUS_HASH_MISMATCH:{index}"
             errors.append(error)
             integrity_errors.append(error)
-        if ledger_record_hash(record) != record_hash:
+        if compute_record_hash(record) != record_hash:
             error = f"RECORD_HASH_MISMATCH:{index}"
+            errors.append(error)
+            integrity_errors.append(error)
+
+        auth_mode = record.get("tamper_evidence_mode", UNKEYED_HASH_CHAIN)
+        if auth_mode not in auth_modes_seen:
+            auth_modes_seen.append(auth_mode)
+        if auth_mode == UNKEYED_HASH_CHAIN:
+            unkeyed_record_count += 1
+            if record.get("record_mac") is not None:
+                error = f"UNKEYED_RECORD_MAC_PRESENT:{index}"
+                errors.append(error)
+                integrity_errors.append(error)
+        elif auth_mode == HMAC_SHA256_V1:
+            hmac_record_count += 1
+            if expected_key_id is not None and record.get("key_id") != expected_key_id:
+                error = f"HMAC_KEY_ID_MISMATCH:{index}"
+                errors.append(error)
+                integrity_errors.append(error)
+            if not hmac_key:
+                error = f"HMAC_KEY_MISSING:{index}"
+                errors.append(error)
+                integrity_errors.append(error)
+            elif not verify_record_mac(record, hmac_key):
+                error = f"HMAC_RECORD_MAC_MISMATCH:{index}"
+                errors.append(error)
+                integrity_errors.append(error)
+        else:
+            error = f"UNKNOWN_AUTH_MODE:{index}"
             errors.append(error)
             integrity_errors.append(error)
 
@@ -93,4 +127,7 @@ def verify_ledger(path: str | Path) -> dict:
         "constitutional_violation_count": constitutional_violation_count,
         "first_hash": first_hash,
         "latest_hash": latest_hash,
+        "hmac_record_count": hmac_record_count,
+        "unkeyed_record_count": unkeyed_record_count,
+        "auth_modes_seen": auth_modes_seen,
     }
