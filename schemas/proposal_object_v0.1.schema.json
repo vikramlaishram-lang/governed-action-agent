@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "proposal_object_v0.1.schema.json",
+  "title": "Proposal Object v0.1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "proposal_id",
+    "agent_id",
+    "agent_output_mode",
+    "agent_output_mode_basis",
+    "execution_authority_claimed",
+    "proposed_action",
+    "normalized_action",
+    "consequence_class",
+    "evidence_available",
+    "evidence_gaps",
+    "risk_level",
+    "requires_human_review",
+    "proposal_readiness_score",
+    "internal_trace_id"
+  ],
+  "properties": {
+    "schema_version": { "const": "proposal_object_v0.1" },
+    "proposal_id": { "type": "string" },
+    "agent_id": { "type": "string" },
+    "agent_output_mode": { "enum": ["PLAN", "ACTION_PROPOSAL", "REVIEW_REQUEST", "REFUSAL"] },
+    "agent_output_mode_basis": { "type": "string" },
+    "execution_authority_claimed": { "type": "boolean" },
+    "proposed_action": { "type": "string" },
+    "normalized_action": { "type": "string" },
+    "consequence_class": {
+      "enum": [
+        "READ_ONLY_ACCESS",
+        "LOCAL_COMPUTATION",
+        "TEXT_GENERATION",
+        "CODE_CHANGE",
+        "WORKFLOW_CHANGE",
+        "SECRET_ACCESS",
+        "DATA_EXPORT",
+        "PRODUCTION_STATE_CHANGE",
+        "IRREVERSIBLE_DELETE",
+        "UNKNOWN"
+      ]
+    },
+    "evidence_available": { "type": "array", "items": { "type": "string" } },
+    "evidence_gaps": { "type": "array", "items": { "type": "string" } },
+    "risk_level": { "enum": ["LOW", "MEDIUM", "HIGH"] },
+    "requires_human_review": { "type": "boolean" },
+    "proposal_readiness_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "internal_trace_id": { "type": "string" }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "goal_contract_v0.1.schema.json",
+  "title": "Goal Contract v0.1",
+  "type": "object",
+  "required": ["goal_id", "user_request", "bounded_goal", "non_goals", "success_criteria"],
+  "properties": {
+    "goal_id": { "type": "string" },
+    "user_request": { "type": "string" },
+    "bounded_goal": { "type": "string" },
+    "non_goals": { "type": "array", "items": { "type": "string" } },
+    "success_criteria": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}
