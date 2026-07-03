@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
 
+from gcr.report_generator import generate_markdown_report, generate_report_summary, write_report_files
 from gcr.replay_verifier import verify_ledger
 
 from .governed_agent import GovernedAgent
@@ -42,6 +44,10 @@ def main(argv: list[str] | None = None) -> int:
     subparsers.add_parser("verify-ledger")
     subparsers.add_parser("demo")
 
+    report_parser = subparsers.add_parser("report")
+    report_parser.add_argument("--format", choices=["status", "markdown", "json"], default="status")
+    report_parser.add_argument("--output-dir", default=None)
+
     args = parser.parse_args(argv)
     try:
         if args.command == "init":
@@ -56,6 +62,8 @@ def main(argv: list[str] | None = None) -> int:
             return _cmd_demo()
         if args.command == "inspect-pr":
             return _cmd_inspect_pr(args.github_pr_url, args.fixture)
+        if args.command == "report":
+            return _cmd_report(args.format, args.output_dir)
     except FileExistsError as exc:
         print(f"GAA_ERROR: {exc}")
         return 1
@@ -166,6 +174,35 @@ def _cmd_inspect_pr(pr_url: str, fixture_path: str | None) -> int:
     print(f"PR_RISK_FLAGS: {risk_flags}")
     print(f"PR_EVIDENCE_RECORDED: {str(bool(snapshot['evidence_hash'])).lower()}")
     print(f"LEDGER_APPENDED: {str('ledger_record' in result).lower()}")
+    return 0
+
+
+def _cmd_report(output_format: str, output_dir: str | None) -> int:
+    _, config, paths = _load_initialized_project()
+    hmac_key = _hmac_key_or_error(config)
+    summary = generate_report_summary(
+        ledger_path=paths["ledger_path"],
+        project_config=config,
+        hmac_key=hmac_key,
+        expected_key_id=config.get("ledger_key_id") if config["ledger_auth_mode"] == "HMAC_SHA256_V1" else None,
+    )
+    report_dir = Path(output_dir) if output_dir is not None else Path(paths["ledger_path"]).parent / "reports"
+    written = write_report_files(summary=summary, output_dir=report_dir)
+    if output_format == "markdown":
+        print(generate_markdown_report(summary))
+        return 0
+    if output_format == "json":
+        print(json.dumps(summary, sort_keys=True))
+        return 0
+    print("REPORT_GENERATED: true")
+    print(f"LEDGER_VALID: {str(summary['ledger']['valid']).lower()}")
+    print(f"TOTAL_RECORDS: {summary['ledger']['record_count']}")
+    print(f"CONSTITUTIONAL_VIOLATIONS: {summary['violations']['constitutional_violation_count']}")
+    print(f"EXECUTION_AUTHORIZATION_VIOLATIONS: {summary['violations']['execution_authorization_violation_count']}")
+    print(f"LATEST_HASH_PRESENT: {str(summary['ledger']['latest_hash_present']).lower()}")
+    print(f"PUBLIC_CLAIMS_COUNT: {len(summary['public_claims_allowed'])}")
+    print(f"MARKDOWN_REPORT: {written['markdown_path']}")
+    print(f"JSON_REPORT: {written['json_path']}")
     return 0
 
 

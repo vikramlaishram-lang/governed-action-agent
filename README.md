@@ -205,6 +205,37 @@ PYTHONPATH=src python -m gcr_agent.cli inspect-pr https://github.com/vikramlaish
 PYTHONPATH=src python -m gcr_agent.cli verify-ledger
 ```
 
+### M10 Release Readiness Report
+
+M10 adds:
+
+- `gaa report`
+- Markdown report
+- JSON report
+- ledger integrity summary
+- decision counts
+- violation counts
+- review-approved action summary
+- GitHub PR evidence summary
+- evidence-bound public claims
+- limitations/non-claims
+
+Commands:
+
+```bash
+PYTHONPATH=src python -m pytest -q
+PYTHONPATH=src python demo/run_m10_release_readiness_report_demo.py
+```
+
+CLI example:
+
+```bash
+PYTHONPATH=src python -m gcr_agent.cli init
+PYTHONPATH=src python -m gcr_agent.cli ask "Read README.md"
+PYTHONPATH=src python -m gcr_agent.cli ask "Read .env"
+PYTHONPATH=src python -m gcr_agent.cli report
+```
+
 ## Out Of Scope
 
 - live production deployment
