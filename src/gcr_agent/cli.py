@@ -9,6 +9,7 @@ from pathlib import Path
 from gcr.report_generator import generate_markdown_report, generate_report_summary, write_report_files
 from gcr.replay_verifier import verify_ledger
 from gcr.reviewer_registry import load_reviewer_registry
+from gcr.viewer_generator import write_viewer_bundle
 
 from .governed_agent import GovernedAgent
 from .project_config import (
@@ -53,6 +54,12 @@ def main(argv: list[str] | None = None) -> int:
     report_parser.add_argument("--format", choices=["status", "markdown", "json"], default="status")
     report_parser.add_argument("--output-dir", default=None)
 
+    viewer_parser = subparsers.add_parser("viewer")
+    viewer_parser.add_argument("--output-dir", default=None)
+    viewer_parser.add_argument("--format", choices=["status"], default="status")
+    viewer_parser.add_argument("--serve", action="store_true")
+    viewer_parser.add_argument("--port", type=int, default=8765)
+
     args = parser.parse_args(argv)
     try:
         if args.command == "init":
@@ -69,6 +76,8 @@ def main(argv: list[str] | None = None) -> int:
             return _cmd_inspect_pr(args.github_pr_url, args.fixture)
         if args.command == "report":
             return _cmd_report(args.format, args.output_dir)
+        if args.command == "viewer":
+            return _cmd_viewer(args.output_dir, args.format, args.serve, args.port)
         if args.command == "propose-change":
             return _cmd_propose_change(args.request)
         if args.command == "reviewers":
@@ -217,6 +226,44 @@ def _cmd_report(output_format: str, output_dir: str | None) -> int:
     print(f"MARKDOWN_REPORT: {written['markdown_path']}")
     print(f"JSON_REPORT: {written['json_path']}")
     return 0
+
+
+def _cmd_viewer(output_dir: str | None, output_format: str, serve: bool, port: int) -> int:
+    _, config, paths = _load_initialized_project()
+    hmac_key = _hmac_key_or_error(config)
+    summary = generate_report_summary(
+        ledger_path=paths["ledger_path"],
+        project_config=config,
+        hmac_key=hmac_key,
+        expected_key_id=config.get("ledger_key_id") if config["ledger_auth_mode"] == "HMAC_SHA256_V1" else None,
+        reviewer_registry=load_reviewer_registry(paths["reviewer_registry_path"]),
+    )
+    viewer_dir = Path(output_dir) if output_dir is not None else Path(paths["ledger_path"]).parent / "viewer"
+    written = write_viewer_bundle(summary=summary, output_dir=viewer_dir)
+    if serve:
+        _serve_viewer(viewer_dir, port)
+        return 0
+    if output_format == "status":
+        print("VIEWER_GENERATED: true")
+        print(f"LEDGER_VALID: {str(summary['ledger']['valid']).lower()}")
+        print(f"TOTAL_RECORDS: {summary['ledger']['record_count']}")
+        print(f"CONSTITUTIONAL_VIOLATIONS: {summary['violations']['constitutional_violation_count']}")
+        print(f"EXECUTION_AUTHORIZATION_VIOLATIONS: {summary['violations']['execution_authorization_violation_count']}")
+        print(f"LATEST_HASH_PRESENT: {str(summary['ledger']['latest_hash_present']).lower()}")
+        print(f"PUBLIC_CLAIMS_COUNT: {len(summary['public_claims_allowed'])}")
+        print(f"VIEWER_INDEX: {written['index_path']}")
+        print(f"VIEWER_DATA: {written['data_path']}")
+    return 0
+
+
+def _serve_viewer(viewer_dir: Path, port: int) -> None:
+    import functools
+    import http.server
+
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(viewer_dir))
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", port), handler)
+    print(f"VIEWER_SERVING: http://127.0.0.1:{port}/")
+    server.serve_forever()
 
 
 def _cmd_propose_change(user_request: str) -> int:

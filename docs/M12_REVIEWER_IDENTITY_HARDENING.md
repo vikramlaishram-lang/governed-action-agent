@@ -66,4 +66,4 @@ M12 uses a local reviewer registry. M12 does not implement SSO/OIDC. M12 does no
 
 ## Next Milestone Suggestion
 
-M13 should add portable audit bundle export containing policy, reviewer registry, ledger, reports, schemas, and replay instructions for external reproduction.
+M13 should add a local static receipt viewer that renders ledger/report evidence without adding execution authority.

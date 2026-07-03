@@ -313,6 +313,48 @@ PYTHONPATH=src python -m gcr_agent.cli propose-change "Update README.md with gov
 PYTHONPATH=src python -m gcr_agent.cli report
 ```
 
+### M13 Hosted Receipt Viewer Local UI
+
+M13 adds:
+
+- local receipt viewer
+- static HTML output
+- viewer_data.json
+- CLI `gaa viewer`
+- ledger integrity visualization
+- decision summary visualization
+- violation summary visualization
+- reviewer identity visualization
+- GitHub PR evidence visualization
+- code-change proposal visualization
+- public claims and limitations section
+
+M13 still does not add:
+
+- hosted cloud dashboard
+- authentication
+- remote sharing
+- production deployment
+- GitHub writes
+- secret access
+- patch application
+
+Commands:
+
+```bash
+PYTHONPATH=src python -m pytest -q
+PYTHONPATH=src python demo/run_m13_hosted_receipt_viewer_local_ui_demo.py
+```
+
+CLI example:
+
+```bash
+PYTHONPATH=src python -m gcr_agent.cli init
+PYTHONPATH=src python -m gcr_agent.cli ask "Read README.md"
+PYTHONPATH=src python -m gcr_agent.cli ask "Read .env"
+PYTHONPATH=src python -m gcr_agent.cli viewer
+```
+
 ## Out Of Scope
 
 - live production deployment
