@@ -16,4 +16,7 @@ def verify_constitutional_invariants(envelope: dict) -> list[str]:
     ) is True:
         if "CONSTITUTIONAL_VIOLATION" not in errors:
             errors.append("CONSTITUTIONAL_VIOLATION")
+
+    if envelope.get("execution_status") == "EXECUTED" and envelope.get("decision") != "ALLOW":
+        errors.append("EXECUTION_WITHOUT_AUTHORIZATION")
     return errors

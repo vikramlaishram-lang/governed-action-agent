@@ -112,6 +112,8 @@ def verify_ledger(path: str | Path, *, hmac_key: str | None = None, expected_key
         if has_constitutional_violation:
             constitutional_violation_count += 1
             errors.append(f"CONSTITUTIONAL_VIOLATION:{index}")
+        if "EXECUTION_WITHOUT_AUTHORIZATION" in constitutional_errors:
+            errors.append(f"EXECUTION_WITHOUT_AUTHORIZATION:{index}")
 
         decision = record.get("receipt", {}).get("decision") or envelope.get("decision")
         if decision and not has_constitutional_violation:
