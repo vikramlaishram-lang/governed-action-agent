@@ -1,0 +1,37 @@
+{
+  "schema_version": "reviewer_authority_registry_v0.1",
+  "registry_version": "m12-default-reviewer-registry",
+  "issuer_id": "local-reviewer-registry",
+  "reviewers": [
+    {
+      "schema_version": "reviewer_identity_manifest_v0.1",
+      "reviewer_id": "alice-release",
+      "display_name": "Alice Release Manager",
+      "status": "ACTIVE",
+      "roles": ["release_manager"],
+      "allowed_scopes": ["PRODUCTION_STATE_CHANGE", "CODE_CHANGE", "WORKFLOW_CHANGE"],
+      "created_at": "2026-01-01T00:00:00+00:00",
+      "identity_hash": "<computed>"
+    },
+    {
+      "schema_version": "reviewer_identity_manifest_v0.1",
+      "reviewer_id": "sam-security",
+      "display_name": "Sam Security Reviewer",
+      "status": "ACTIVE",
+      "roles": ["security_reviewer"],
+      "allowed_scopes": ["PRODUCTION_STATE_CHANGE", "DATA_EXPORT"],
+      "created_at": "2026-01-01T00:00:00+00:00",
+      "identity_hash": "<computed>"
+    },
+    {
+      "schema_version": "reviewer_identity_manifest_v0.1",
+      "reviewer_id": "riley-revoked",
+      "display_name": "Riley Revoked Reviewer",
+      "status": "REVOKED",
+      "roles": ["release_manager"],
+      "allowed_scopes": ["PRODUCTION_STATE_CHANGE"],
+      "created_at": "2026-01-01T00:00:00+00:00",
+      "identity_hash": "<computed>"
+    }
+  ]
+}

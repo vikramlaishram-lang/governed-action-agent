@@ -8,6 +8,7 @@ from pathlib import Path
 
 from gcr.report_generator import generate_markdown_report, generate_report_summary, write_report_files
 from gcr.replay_verifier import verify_ledger
+from gcr.reviewer_registry import load_reviewer_registry
 
 from .governed_agent import GovernedAgent
 from .project_config import (
@@ -46,6 +47,7 @@ def main(argv: list[str] | None = None) -> int:
 
     subparsers.add_parser("verify-ledger")
     subparsers.add_parser("demo")
+    subparsers.add_parser("reviewers")
 
     report_parser = subparsers.add_parser("report")
     report_parser.add_argument("--format", choices=["status", "markdown", "json"], default="status")
@@ -69,6 +71,8 @@ def main(argv: list[str] | None = None) -> int:
             return _cmd_report(args.format, args.output_dir)
         if args.command == "propose-change":
             return _cmd_propose_change(args.request)
+        if args.command == "reviewers":
+            return _cmd_reviewers()
     except FileExistsError as exc:
         print(f"GAA_ERROR: {exc}")
         return 1
@@ -109,6 +113,7 @@ def _cmd_status() -> int:
     print(f"LEDGER_EXISTS: {str(status['ledger_exists']).lower()}")
     print(f"AUTH_MODE: {status['ledger_auth_mode']}")
     print(f"KEY_ID: {status['ledger_key_id'] if status['ledger_key_id'] is not None else 'null'}")
+    print(f"REVIEWER_REGISTRY_EXISTS: {str(status.get('reviewer_registry_exists', False)).lower()}")
     return 0
 
 
@@ -122,6 +127,7 @@ def _cmd_ask(user_request: str) -> int:
         ledger_hmac_key=hmac_key,
         ledger_key_id=config.get("ledger_key_id"),
         policy_path=paths["policy_path"],
+        reviewer_registry_path=paths["reviewer_registry_path"],
     )
     result = agent.handle_request(user_request)
     decision = result["envelope"]["decision"]
@@ -163,6 +169,7 @@ def _cmd_inspect_pr(pr_url: str, fixture_path: str | None) -> int:
         ledger_hmac_key=hmac_key,
         ledger_key_id=config.get("ledger_key_id"),
         policy_path=paths["policy_path"],
+        reviewer_registry_path=paths["reviewer_registry_path"],
     )
     result = agent.inspect_github_pr(
         pr_url,
@@ -190,6 +197,7 @@ def _cmd_report(output_format: str, output_dir: str | None) -> int:
         project_config=config,
         hmac_key=hmac_key,
         expected_key_id=config.get("ledger_key_id") if config["ledger_auth_mode"] == "HMAC_SHA256_V1" else None,
+        reviewer_registry=load_reviewer_registry(paths["reviewer_registry_path"]),
     )
     report_dir = Path(output_dir) if output_dir is not None else Path(paths["ledger_path"]).parent / "reports"
     written = write_report_files(summary=summary, output_dir=report_dir)
@@ -221,6 +229,7 @@ def _cmd_propose_change(user_request: str) -> int:
         ledger_hmac_key=hmac_key,
         ledger_key_id=config.get("ledger_key_id"),
         policy_path=paths["policy_path"],
+        reviewer_registry_path=paths["reviewer_registry_path"],
     )
     result = agent.propose_code_change(user_request)
     decision = result["envelope"]["decision"]
@@ -236,6 +245,18 @@ def _cmd_propose_change(user_request: str) -> int:
     return 0
 
 
+def _cmd_reviewers() -> int:
+    _, _, paths = _load_initialized_project()
+    registry = load_reviewer_registry(paths["reviewer_registry_path"])
+    reviewers = registry.to_dict().get("reviewers", [])
+    print("REVIEWER_REGISTRY: OK")
+    print(f"REVIEWERS_TOTAL: {len(reviewers)}")
+    print(f"REVIEWERS_ACTIVE: {sum(1 for reviewer in reviewers if reviewer.get('status') == 'ACTIVE')}")
+    print(f"REVIEWERS_REVOKED: {sum(1 for reviewer in reviewers if reviewer.get('status') == 'REVOKED')}")
+    print(f"REVIEWERS_SUSPENDED: {sum(1 for reviewer in reviewers if reviewer.get('status') == 'SUSPENDED')}")
+    return 0
+
+
 def _cmd_demo() -> int:
     root, config, paths = _load_initialized_project()
     hmac_key = _hmac_key_or_error(config)
@@ -246,6 +267,7 @@ def _cmd_demo() -> int:
         ledger_hmac_key=hmac_key,
         ledger_key_id=config.get("ledger_key_id"),
         policy_path=paths["policy_path"],
+        reviewer_registry_path=paths["reviewer_registry_path"],
     )
     scenarios = {
         "SAFE_READ": "Read README.md",

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reviewer_authority_registry_v0.1.schema.json",
+  "type": "object",
+  "required": ["schema_version", "registry_version", "issuer_id", "reviewers"],
+  "properties": {
+    "schema_version": { "const": "reviewer_authority_registry_v0.1" },
+    "registry_version": { "type": "string", "minLength": 1 },
+    "issuer_id": { "type": "string", "minLength": 1 },
+    "reviewers": {
+      "type": "array",
+      "items": { "$ref": "reviewer_identity_manifest_v0.1.schema.json" }
+    }
+  },
+  "additionalProperties": false
+}

@@ -9,6 +9,7 @@ DEFAULT_CONFIG_DIR = ".governed-agent"
 DEFAULT_CONFIG_FILE = "config.json"
 DEFAULT_POLICY_FILE = "policy.json"
 DEFAULT_LEDGER_FILE = "ledger.jsonl"
+DEFAULT_REVIEWERS_FILE = "reviewers.json"
 
 
 def find_project_root(start: Path | None = None) -> Path:
@@ -33,6 +34,7 @@ def init_project(
     config_path = config_dir / DEFAULT_CONFIG_FILE
     policy_path = config_dir / DEFAULT_POLICY_FILE
     ledger_path = config_dir / DEFAULT_LEDGER_FILE
+    reviewers_path = config_dir / DEFAULT_REVIEWERS_FILE
 
     if config_path.exists() and not force:
         raise FileExistsError(f"Project config already exists: {config_path}")
@@ -41,6 +43,9 @@ def init_project(
     default_policy = Path(__file__).resolve().parents[2] / "configs" / "policy.default.json"
     if force or not policy_path.exists():
         shutil.copyfile(default_policy, policy_path)
+    default_reviewers = Path(__file__).resolve().parents[2] / "configs" / "reviewers.default.json"
+    if force or not reviewers_path.exists():
+        shutil.copyfile(default_reviewers, reviewers_path)
     if not ledger_path.exists():
         ledger_path.write_text("", encoding="utf-8")
 
@@ -49,6 +54,7 @@ def init_project(
         "project_name": root.name,
         "ledger_path": f"{DEFAULT_CONFIG_DIR}/{DEFAULT_LEDGER_FILE}",
         "policy_path": f"{DEFAULT_CONFIG_DIR}/{DEFAULT_POLICY_FILE}",
+        "reviewer_registry_path": f"{DEFAULT_CONFIG_DIR}/{DEFAULT_REVIEWERS_FILE}",
         "ledger_auth_mode": auth_mode,
         "ledger_key_id": key_id if auth_mode == "HMAC_SHA256_V1" else None,
     }
@@ -70,6 +76,7 @@ def resolve_paths(config: dict, root: Path) -> dict:
         "config_path": root / DEFAULT_CONFIG_DIR / DEFAULT_CONFIG_FILE,
         "policy_path": (root / config["policy_path"]).resolve(),
         "ledger_path": (root / config["ledger_path"]).resolve(),
+        "reviewer_registry_path": (root / config.get("reviewer_registry_path", f"{DEFAULT_CONFIG_DIR}/{DEFAULT_REVIEWERS_FILE}")).resolve(),
     }
 
 
@@ -88,6 +95,8 @@ def project_status(root: Path | None = None) -> dict:
         "policy_path": paths["policy_path"],
         "ledger_exists": paths["ledger_path"].exists(),
         "policy_exists": paths["policy_path"].exists(),
+        "reviewer_registry_path": paths["reviewer_registry_path"],
+        "reviewer_registry_exists": paths["reviewer_registry_path"].exists(),
         "ledger_auth_mode": config.get("ledger_auth_mode"),
         "ledger_key_id": config.get("ledger_key_id"),
     }

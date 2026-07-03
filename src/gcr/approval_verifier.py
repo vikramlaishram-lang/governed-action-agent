@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 
 from .policy_loader import get_policy_rule
 from .review_token import ReviewToken
+from .reviewer_registry import ReviewerAuthorityRegistry
 
 
 NEVER_APPROVABLE = {"SECRET_ACCESS", "IRREVERSIBLE_DELETE"}
@@ -15,6 +16,7 @@ def verify_review_token(
     review_token: dict | ReviewToken | None,
     policy: dict,
     now: datetime | None = None,
+    reviewer_registry: ReviewerAuthorityRegistry | dict | None = None,
 ) -> tuple[bool, list[str]]:
     rule = get_policy_rule(policy, proposal["consequence_class"])
     errors: list[str] = []
@@ -35,8 +37,13 @@ def verify_review_token(
     token = review_token.to_dict() if isinstance(review_token, ReviewToken) else dict(review_token)
     current_time = now or datetime.now(UTC)
 
-    if token.get("schema_version") != "review_token_v0.1":
-        errors.append("REVIEW_TOKEN_SCHEMA_INVALID")
+    registry = ReviewerAuthorityRegistry(reviewer_registry) if isinstance(reviewer_registry, dict) else reviewer_registry
+    if registry is None:
+        if token.get("schema_version") not in {"review_token_v0.1", "review_token_v0.2"}:
+            errors.append("REVIEW_TOKEN_SCHEMA_INVALID")
+    else:
+        if token.get("schema_version") != "review_token_v0.2":
+            errors.append("REVIEW_TOKEN_VERSION_UNHARDENED")
     if token.get("approval_status") != "APPROVED":
         errors.append("REVIEW_TOKEN_NOT_APPROVED")
     if token.get("proposal_id") != proposal["proposal_id"]:
@@ -55,6 +62,22 @@ def verify_review_token(
     allowed_roles = rule.get("allowed_reviewer_roles", [])
     if token.get("reviewer_role") not in allowed_roles:
         errors.append("REVIEWER_ROLE_NOT_ALLOWED")
+
+    if registry is not None:
+        reviewer = registry.get_reviewer(token.get("reviewer_id"))
+        if reviewer is None:
+            errors.append("REVIEWER_UNKNOWN")
+        else:
+            if reviewer.get("status") != "ACTIVE":
+                errors.append("REVIEWER_NOT_ACTIVE")
+            if not registry.reviewer_has_role(token.get("reviewer_id"), token.get("reviewer_role")):
+                errors.append("REVIEWER_ROLE_NOT_AUTHORIZED")
+            if not registry.reviewer_has_scope(token.get("reviewer_id"), token.get("approval_scope")):
+                errors.append("REVIEWER_SCOPE_NOT_AUTHORIZED")
+            if not registry.verify_identity_hash(token.get("reviewer_id"), token.get("reviewer_identity_hash")):
+                errors.append("REVIEWER_IDENTITY_HASH_MISMATCH")
+        if token.get("issuer_id") != registry.issuer_id:
+            errors.append("REVIEWER_ISSUER_MISMATCH")
 
     return len(errors) == 0, errors
 

@@ -19,7 +19,13 @@ def replay_records(path: str | Path) -> list[dict]:
     return records
 
 
-def verify_ledger(path: str | Path, *, hmac_key: str | None = None, expected_key_id: str | None = None) -> dict:
+def verify_ledger(
+    path: str | Path,
+    *,
+    hmac_key: str | None = None,
+    expected_key_id: str | None = None,
+    reviewer_registry=None,
+) -> dict:
     ledger_path = Path(path)
     errors: list[str] = []
     integrity_errors: list[str] = []
@@ -116,6 +122,9 @@ def verify_ledger(path: str | Path, *, hmac_key: str | None = None, expected_key
             errors.append(f"EXECUTION_WITHOUT_AUTHORIZATION:{index}")
 
         decision = record.get("receipt", {}).get("decision") or envelope.get("decision")
+        if reviewer_registry is not None and record.get("receipt", {}).get("review_status") == "APPROVED":
+            if record.get("receipt", {}).get("reviewer_identity_verified") is not True:
+                errors.append(f"REVIEWER_IDENTITY_MISSING_FOR_APPROVED_ACTION:{index}")
         if decision and not has_constitutional_violation:
             decision_counts[decision] = decision_counts.get(decision, 0) + 1
 

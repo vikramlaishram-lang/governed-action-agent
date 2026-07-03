@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reviewer_identity_manifest_v0.1.schema.json",
+  "type": "object",
+  "required": ["schema_version", "reviewer_id", "display_name", "status", "roles", "allowed_scopes", "created_at", "identity_hash"],
+  "properties": {
+    "schema_version": { "const": "reviewer_identity_manifest_v0.1" },
+    "reviewer_id": { "type": "string", "minLength": 1 },
+    "display_name": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["ACTIVE", "SUSPENDED", "REVOKED"] },
+    "roles": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "allowed_scopes": {
+      "type": "array",
+      "items": { "enum": ["CODE_CHANGE", "WORKFLOW_CHANGE", "PRODUCTION_STATE_CHANGE", "DATA_EXPORT", "UNKNOWN"] }
+    },
+    "created_at": { "type": "string" },
+    "identity_hash": { "type": "string" }
+  },
+  "additionalProperties": false
+}

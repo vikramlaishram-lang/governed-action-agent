@@ -19,6 +19,8 @@ class ReviewToken:
     issued_at: str
     expires_at: str
     approval_reason: str
+    reviewer_identity_hash: str | None = None
+    issuer_id: str | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -36,11 +38,19 @@ class ReviewToken:
         approval_scope: str,
         ttl_seconds: int = 3600,
         approval_reason: str = "",
+        reviewer_identity_hash: str | None = None,
+        issuer_id: str | None = None,
+        reviewer_registry=None,
     ) -> "ReviewToken":
         issued_at = datetime.now(UTC)
         expires_at = issued_at + timedelta(seconds=ttl_seconds)
+        if reviewer_registry is not None:
+            registry = reviewer_registry
+            reviewer = registry.get_reviewer(reviewer_id)
+            reviewer_identity_hash = reviewer.get("identity_hash") if reviewer else reviewer_identity_hash
+            issuer_id = registry.issuer_id
         return cls(
-            schema_version="review_token_v0.1",
+            schema_version="review_token_v0.2" if reviewer_identity_hash or issuer_id else "review_token_v0.1",
             token_id=f"review_{uuid4().hex}",
             proposal_id=proposal["proposal_id"],
             reviewer_id=reviewer_id,
@@ -52,4 +62,6 @@ class ReviewToken:
             issued_at=issued_at.isoformat(),
             expires_at=expires_at.isoformat(),
             approval_reason=approval_reason,
+            reviewer_identity_hash=reviewer_identity_hash,
+            issuer_id=issuer_id,
         )

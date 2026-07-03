@@ -7,6 +7,7 @@ from gcr.policy_loader import load_policy
 from gcr.proposal_object import create_proposal_object
 from gcr.proposal_to_envelope import proposal_to_envelope
 from gcr.receipt_ledger import ReceiptLedger
+from gcr.reviewer_registry import ReviewerAuthorityRegistry, load_reviewer_registry
 from gcr.verify_envelope_chain import verify_constitutional_invariants
 
 from .consequence_classifier import classify_consequence
@@ -29,10 +30,20 @@ class GovernedAgent:
         ledger_hmac_key: str | None = None,
         ledger_key_id: str | None = None,
         policy_path: str | Path | None = None,
+        reviewer_registry_path: str | Path | None = None,
+        reviewer_registry: dict | ReviewerAuthorityRegistry | None = None,
     ) -> None:
         self.runtime_id = runtime_id
         self.root_path = Path(root_path or Path.cwd()).resolve()
         self.policy = load_policy(policy_path) if policy_path is not None else None
+        if reviewer_registry is not None:
+            self.reviewer_registry = (
+                ReviewerAuthorityRegistry(reviewer_registry) if isinstance(reviewer_registry, dict) else reviewer_registry
+            )
+        elif reviewer_registry_path is not None:
+            self.reviewer_registry = load_reviewer_registry(reviewer_registry_path)
+        else:
+            self.reviewer_registry = None
         self.ledger = (
             ReceiptLedger(
                 ledger_path,
@@ -66,7 +77,12 @@ class GovernedAgent:
         proposal: dict,
         review_token: dict | None = None,
     ) -> dict:
-        policy_result = apply_policy(proposal, review_token=review_token, policy=self.policy)
+        policy_result = apply_policy(
+            proposal,
+            review_token=review_token,
+            policy=self.policy,
+            reviewer_registry=self.reviewer_registry,
+        )
         envelope = proposal_to_envelope(proposal, policy_result, runtime_id=self.runtime_id)
         verification_errors = verify_constitutional_invariants(envelope)
 
@@ -154,7 +170,7 @@ class GovernedAgent:
             proposal["evidence_gaps"].append("sensitive_file_review")
         proposal["risk_level"] = "LOW" if snapshot["checks_passing"] and not snapshot["risk_flags"] else "MEDIUM"
 
-        policy_result = apply_policy(proposal, policy=self.policy)
+        policy_result = apply_policy(proposal, policy=self.policy, reviewer_registry=self.reviewer_registry)
         envelope = proposal_to_envelope(proposal, policy_result, runtime_id=self.runtime_id)
         verification_errors = verify_constitutional_invariants(envelope)
         envelope["execution_status"] = "EXECUTED"
@@ -219,7 +235,12 @@ class GovernedAgent:
         elif consequence_class in {"SECRET_ACCESS", "IRREVERSIBLE_DELETE"}:
             planning_error = CodeChangePlanningError(consequence_class, "Unsafe code-change proposal request denied")
 
-        policy_result = apply_policy(proposal, review_token=review_token, policy=self.policy)
+        policy_result = apply_policy(
+            proposal,
+            review_token=review_token,
+            policy=self.policy,
+            reviewer_registry=self.reviewer_registry,
+        )
         envelope = proposal_to_envelope(proposal, policy_result, runtime_id=self.runtime_id)
         verification_errors = verify_constitutional_invariants(envelope)
 

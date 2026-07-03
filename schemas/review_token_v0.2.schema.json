@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review_token_v0.2.schema.json",
+  "type": "object",
+  "required": ["schema_version", "token_id", "proposal_id", "reviewer_id", "reviewer_role", "reviewer_identity_hash", "issuer_id", "approval_status", "approved_normalized_action", "approved_consequence_class", "approval_scope", "issued_at", "expires_at", "approval_reason"],
+  "properties": {
+    "schema_version": { "const": "review_token_v0.2" },
+    "token_id": { "type": "string" },
+    "proposal_id": { "type": "string" },
+    "reviewer_id": { "type": "string" },
+    "reviewer_role": { "type": "string" },
+    "reviewer_identity_hash": { "type": "string" },
+    "issuer_id": { "type": "string" },
+    "approval_status": { "enum": ["APPROVED", "REJECTED", "REVOKED"] },
+    "approved_normalized_action": { "type": "string" },
+    "approved_consequence_class": { "type": "string" },
+    "approval_scope": { "enum": ["CODE_CHANGE", "WORKFLOW_CHANGE", "PRODUCTION_STATE_CHANGE", "DATA_EXPORT", "UNKNOWN"] },
+    "issued_at": { "type": "string" },
+    "expires_at": { "type": "string" },
+    "approval_reason": { "type": "string" }
+  },
+  "additionalProperties": false
+}

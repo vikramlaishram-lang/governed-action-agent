@@ -236,6 +236,46 @@ PYTHONPATH=src python -m gcr_agent.cli ask "Read .env"
 PYTHONPATH=src python -m gcr_agent.cli report
 ```
 
+### M12 Reviewer Identity Hardening
+
+M12 adds:
+
+- reviewer identity manifests
+- local reviewer authority registry
+- review token v0.2
+- reviewer identity hash binding
+- issuer binding
+- active/revoked/suspended reviewer checks
+- role/scope validation
+- reviewer identity fields in receipts/reports
+- CLI reviewer registry status
+
+M12 still does not add:
+
+- SSO/OIDC
+- production IAM
+- legal identity proof
+- remote audit
+- real deployment
+- GitHub writes
+- secret access
+- destructive action
+
+Commands:
+
+```bash
+PYTHONPATH=src python -m pytest -q
+PYTHONPATH=src python demo/run_m12_reviewer_identity_hardening_demo.py
+```
+
+CLI examples:
+
+```bash
+PYTHONPATH=src python -m gcr_agent.cli init
+PYTHONPATH=src python -m gcr_agent.cli status
+PYTHONPATH=src python -m gcr_agent.cli reviewers
+```
+
 ### M11 Sandboxed Code Change Proposals
 
 M11 adds:

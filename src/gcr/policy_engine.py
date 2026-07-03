@@ -19,7 +19,12 @@ POLICY_RULES = {
 }
 
 
-def apply_policy(proposal: dict, review_token: dict | None = None, policy: dict | None = None) -> dict:
+def apply_policy(
+    proposal: dict,
+    review_token: dict | None = None,
+    policy: dict | None = None,
+    reviewer_registry=None,
+) -> dict:
     policy = policy or load_policy()
     consequence = proposal["consequence_class"]
     rule = get_policy_rule(policy, consequence)
@@ -38,6 +43,7 @@ def apply_policy(proposal: dict, review_token: dict | None = None, policy: dict 
             "approval_token_id": _token_field(token_dict, "token_id"),
             "approval_scope": _token_field(token_dict, "approval_scope"),
             "approval_expiry": _token_field(token_dict, "expires_at"),
+            **_reviewer_identity_fields(token_dict, reviewer_registry, ["CONSTITUTIONAL_VIOLATION"]),
             "policy_version": policy["policy_version"],
             "policy_hash": policy_hash(policy),
             "decision_engine_version": policy["decision_engine_version"],
@@ -80,7 +86,12 @@ def apply_policy(proposal: dict, review_token: dict | None = None, policy: dict 
             approval_errors=["REVIEW_TOKEN_MISSING"],
         )
 
-    valid, approval_errors = verify_review_token(proposal=proposal, review_token=review_token, policy=policy)
+    valid, approval_errors = verify_review_token(
+        proposal=proposal,
+        review_token=review_token,
+        policy=policy,
+        reviewer_registry=reviewer_registry,
+    )
     if valid:
         return _decision(
             policy=policy,
@@ -91,6 +102,7 @@ def apply_policy(proposal: dict, review_token: dict | None = None, policy: dict 
             review_status="APPROVED",
             approval_valid=True,
             approval_errors=[],
+            reviewer_registry=reviewer_registry,
         )
 
     return _decision(
@@ -102,6 +114,7 @@ def apply_policy(proposal: dict, review_token: dict | None = None, policy: dict 
         review_status="REJECTED",
         approval_valid=False,
         approval_errors=approval_errors,
+        reviewer_registry=reviewer_registry,
     )
 
 
@@ -115,6 +128,7 @@ def _decision(
     review_status: str,
     approval_valid: bool,
     approval_errors: list[str],
+    reviewer_registry=None,
 ) -> dict:
     return {
         "decision": decision,
@@ -128,6 +142,7 @@ def _decision(
         "approval_token_id": _token_field(token, "token_id"),
         "approval_scope": _token_field(token, "approval_scope"),
         "approval_expiry": _token_field(token, "expires_at"),
+        **_reviewer_identity_fields(token, reviewer_registry, approval_errors, approval_valid),
         "policy_version": policy["policy_version"],
         "policy_hash": policy_hash(policy),
         "decision_engine_version": policy["decision_engine_version"],
@@ -138,3 +153,25 @@ def _token_field(token: dict | None, field_name: str) -> str | None:
     if not token:
         return None
     return token.get(field_name)
+
+
+def _reviewer_identity_fields(
+    token: dict | None,
+    reviewer_registry=None,
+    approval_errors: list[str] | None = None,
+    approval_valid: bool = False,
+) -> dict:
+    registry_version = getattr(reviewer_registry, "registry_version", None)
+    issuer_id = getattr(reviewer_registry, "issuer_id", None) or _token_field(token, "issuer_id")
+    identity_errors = [
+        error
+        for error in (approval_errors or [])
+        if error.startswith("REVIEWER_") or error == "REVIEW_TOKEN_VERSION_UNHARDENED"
+    ]
+    return {
+        "reviewer_identity_verified": bool(reviewer_registry is not None and approval_valid and not identity_errors),
+        "reviewer_identity_errors": identity_errors,
+        "reviewer_identity_hash": _token_field(token, "reviewer_identity_hash"),
+        "reviewer_registry_version": registry_version,
+        "reviewer_issuer_id": issuer_id,
+    }

@@ -16,9 +16,15 @@ def generate_report_summary(
     project_config: dict | None = None,
     hmac_key: str | None = None,
     expected_key_id: str | None = None,
+    reviewer_registry=None,
 ) -> dict:
     ledger_path = Path(ledger_path)
-    verification = verify_ledger(ledger_path, hmac_key=hmac_key, expected_key_id=expected_key_id)
+    verification = verify_ledger(
+        ledger_path,
+        hmac_key=hmac_key,
+        expected_key_id=expected_key_id,
+        reviewer_registry=reviewer_registry,
+    )
     records = replay_records(ledger_path)
     decision_counts = {key: verification.get("decision_counts", {}).get(key, 0) for key in DECISION_KEYS}
     execution_auth_errors = [error for error in verification["errors"] if "EXECUTION_WITHOUT_AUTHORIZATION" in error]
@@ -61,6 +67,13 @@ def generate_report_summary(
             "review_rejected_count": 0,
             "review_approved_actions": [],
         },
+        "reviewer_identity": {
+            "reviewer_registry_version": getattr(reviewer_registry, "registry_version", None),
+            "reviewer_issuer_id": getattr(reviewer_registry, "issuer_id", None),
+            "approved_actions_with_verified_identity": 0,
+            "approved_actions_missing_identity": 0,
+            "reviewer_identity_errors": [],
+        },
         "actions": {
             "denied_actions": [],
             "request_review_actions": [],
@@ -85,6 +98,11 @@ def generate_report_summary(
 
         if review_status == "APPROVED" and receipt.get("approval_valid") is True and receipt.get("decision") == "ALLOW":
             summary["review"]["review_approved_actions"].append(_review_action(receipt))
+            if receipt.get("reviewer_identity_verified") is True:
+                summary["reviewer_identity"]["approved_actions_with_verified_identity"] += 1
+            else:
+                summary["reviewer_identity"]["approved_actions_missing_identity"] += 1
+        summary["reviewer_identity"]["reviewer_identity_errors"].extend(receipt.get("reviewer_identity_errors", []))
 
         action = _action_summary(receipt)
         if receipt.get("decision") == "DENY":
@@ -152,6 +170,14 @@ def generate_markdown_report(summary: dict) -> str:
     lines.append("## GitHub PR Evidence")
     lines.extend(_github_bullets(summary["github_pr_evidence"]))
     lines.append("")
+    lines.append("## Reviewer Identity")
+    lines.append(f"- Registry version: {summary['reviewer_identity']['reviewer_registry_version']}")
+    lines.append(f"- Issuer id: {summary['reviewer_identity']['reviewer_issuer_id']}")
+    lines.append(
+        f"- Verified reviewer-approved actions: {summary['reviewer_identity']['approved_actions_with_verified_identity']}"
+    )
+    lines.append(f"- Reviewer identity errors: {len(summary['reviewer_identity']['reviewer_identity_errors'])}")
+    lines.append("")
     lines.append("## Code Change Proposals")
     lines.extend(_code_change_bullets(summary["code_change_proposals"]))
     lines.append("")
@@ -206,6 +232,8 @@ def derive_public_claims(summary: dict) -> list[str]:
         claims.append("The report includes sandboxed code-change proposal records.")
         if all(item.get("applied_to_real_repo") is False for item in summary["code_change_proposals"]):
             claims.append("The recorded code-change proposals indicate applied_to_real_repo=false.")
+    if summary.get("reviewer_identity", {}).get("approved_actions_with_verified_identity", 0) > 0:
+        claims.append("The report includes reviewer-approved actions with local reviewer identity verification.")
     return claims
 
 
