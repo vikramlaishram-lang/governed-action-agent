@@ -236,6 +236,43 @@ PYTHONPATH=src python -m gcr_agent.cli ask "Read .env"
 PYTHONPATH=src python -m gcr_agent.cli report
 ```
 
+### M11 Sandboxed Code Change Proposals
+
+M11 adds:
+
+- sandboxed code-change proposals
+- diff-only artifacts
+- no real repo modification
+- review-required CODE_CHANGE
+- CLI propose-change
+- code-change proposal receipts
+- report inclusion
+
+M11 still does not add:
+
+- real file writes
+- patch application
+- PR creation
+- GitHub writes
+- merge
+- deployment
+- arbitrary shell
+
+Commands:
+
+```bash
+PYTHONPATH=src python -m pytest -q
+PYTHONPATH=src python demo/run_m11_sandboxed_code_change_demo.py
+```
+
+CLI example:
+
+```bash
+PYTHONPATH=src python -m gcr_agent.cli init
+PYTHONPATH=src python -m gcr_agent.cli propose-change "Update README.md with governed agent summary"
+PYTHONPATH=src python -m gcr_agent.cli report
+```
+
 ## Out Of Scope
 
 - live production deployment

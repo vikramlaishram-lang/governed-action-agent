@@ -41,6 +41,9 @@ def main(argv: list[str] | None = None) -> int:
     inspect_parser.add_argument("github_pr_url")
     inspect_parser.add_argument("--fixture", default=None)
 
+    change_parser = subparsers.add_parser("propose-change")
+    change_parser.add_argument("request")
+
     subparsers.add_parser("verify-ledger")
     subparsers.add_parser("demo")
 
@@ -64,6 +67,8 @@ def main(argv: list[str] | None = None) -> int:
             return _cmd_inspect_pr(args.github_pr_url, args.fixture)
         if args.command == "report":
             return _cmd_report(args.format, args.output_dir)
+        if args.command == "propose-change":
+            return _cmd_propose_change(args.request)
     except FileExistsError as exc:
         print(f"GAA_ERROR: {exc}")
         return 1
@@ -203,6 +208,31 @@ def _cmd_report(output_format: str, output_dir: str | None) -> int:
     print(f"PUBLIC_CLAIMS_COUNT: {len(summary['public_claims_allowed'])}")
     print(f"MARKDOWN_REPORT: {written['markdown_path']}")
     print(f"JSON_REPORT: {written['json_path']}")
+    return 0
+
+
+def _cmd_propose_change(user_request: str) -> int:
+    root, config, paths = _load_initialized_project()
+    hmac_key = _hmac_key_or_error(config)
+    agent = GovernedAgent(
+        root_path=root,
+        ledger_path=paths["ledger_path"],
+        ledger_auth_mode=config["ledger_auth_mode"],
+        ledger_hmac_key=hmac_key,
+        ledger_key_id=config.get("ledger_key_id"),
+        policy_path=paths["policy_path"],
+    )
+    result = agent.propose_code_change(user_request)
+    decision = result["envelope"]["decision"]
+    if "CONSTITUTIONAL_VIOLATION" in result["verification_errors"]:
+        decision = "CONSTITUTIONAL_VIOLATION"
+    artifact = result.get("code_change_proposal")
+    print(f"CHANGE_DECISION: {decision}")
+    print(f"CONSEQUENCE: {result['proposal']['consequence_class']}")
+    print(f"SANDBOX_ARTIFACT_CREATED: {str(artifact is not None).lower()}")
+    print("REAL_REPO_MODIFIED: false")
+    print(f"RECEIPT_ID: {result['receipt']['receipt_id']}")
+    print(f"LEDGER_APPENDED: {str('ledger_record' in result).lower()}")
     return 0
 
 

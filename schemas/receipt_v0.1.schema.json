@@ -35,6 +35,7 @@
     "evidence_references",
     "evidence_gaps",
     "github_pr",
+    "code_change_proposal",
     "record_hash",
     "created_at"
   ],
@@ -78,6 +79,18 @@
         "evidence_hash": { "type": "string" },
         "checks_passing": { "type": "boolean" },
         "risk_flags": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "code_change_proposal": {
+      "type": ["object", "null"],
+      "properties": {
+        "proposal_artifact_id": { "type": "string" },
+        "target_files": { "type": "array", "items": { "type": "string" } },
+        "change_intent": { "type": "string" },
+        "diff_hash": { "type": "string" },
+        "risk_flags": { "type": "array", "items": { "type": "string" } },
+        "requires_review": { "type": "boolean" },
+        "applied_to_real_repo": { "const": false }
       }
     },
     "record_hash": { "type": "string" },

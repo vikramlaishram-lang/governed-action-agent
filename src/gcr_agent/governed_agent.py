@@ -10,6 +10,7 @@ from gcr.receipt_ledger import ReceiptLedger
 from gcr.verify_envelope_chain import verify_constitutional_invariants
 
 from .consequence_classifier import classify_consequence
+from .code_change_planner import CodeChangePlanner, CodeChangePlanningError
 from .github_pr_reader import GitHubPRReader
 from .goal_contract import create_goal_contract
 from .identity_manifest import get_identity_manifest
@@ -185,6 +186,94 @@ class GovernedAgent:
             "receipt": receipt,
             "github_pr_snapshot": snapshot,
         }
+        if ledger_record is not None:
+            result["ledger_record"] = ledger_record
+        return result
+
+    def propose_code_change(
+        self,
+        user_request: str,
+        *,
+        review_token: dict | None = None,
+        prepared: dict | None = None,
+    ) -> dict:
+        prepared = prepared or self.prepare_request(user_request)
+        goal_contract = prepared["goal_contract"]
+        proposal = prepared["proposal"]
+        consequence_class = proposal["consequence_class"]
+        code_artifact = None
+        planning_error: CodeChangePlanningError | None = None
+
+        if consequence_class in {"CODE_CHANGE", "WORKFLOW_CHANGE"}:
+            try:
+                code_artifact = CodeChangePlanner().plan_change(
+                    root=self.root_path,
+                    user_request=user_request,
+                    proposal_id=proposal["proposal_id"],
+                    agent_id=proposal["agent_id"],
+                )
+            except CodeChangePlanningError as exc:
+                planning_error = exc
+                consequence_class = exc.consequence_class
+                proposal["consequence_class"] = consequence_class
+        elif consequence_class in {"SECRET_ACCESS", "IRREVERSIBLE_DELETE"}:
+            planning_error = CodeChangePlanningError(consequence_class, "Unsafe code-change proposal request denied")
+
+        policy_result = apply_policy(proposal, review_token=review_token, policy=self.policy)
+        envelope = proposal_to_envelope(proposal, policy_result, runtime_id=self.runtime_id)
+        verification_errors = verify_constitutional_invariants(envelope)
+
+        if envelope["decision"] == "ALLOW" and code_artifact is not None:
+            envelope["execution_status"] = "EXECUTED"
+            envelope["outcome_status"] = "SUCCESS"
+            tool_result = {
+                "tool_name": "sandboxed_code_change_proposal",
+                "tool_executed": True,
+                "tool_status": "SUCCESS",
+                "tool_result_summary": "sandboxed code change proposal generated; real repo unchanged",
+                "code_change_proposal": code_artifact.to_dict(),
+                "diff_text": code_artifact.diff_text,
+            }
+        elif envelope["decision"] == "REQUEST_REVIEW":
+            envelope["execution_status"] = "NOT_EXECUTED"
+            envelope["outcome_status"] = "PENDING_REVIEW"
+            tool_result = {
+                "tool_name": "sandboxed_code_change_proposal" if code_artifact else None,
+                "tool_executed": False,
+                "tool_status": "PENDING_REVIEW",
+                "tool_result_summary": "sandboxed code change proposal awaits review",
+                "code_change_proposal": code_artifact.to_dict() if code_artifact else None,
+            }
+        else:
+            envelope["execution_status"] = "NOT_EXECUTED"
+            envelope["outcome_status"] = "BLOCKED"
+            tool_result = {
+                "tool_name": None,
+                "tool_executed": False,
+                "tool_status": "NOT_INVOKED",
+                "reason": str(planning_error) if planning_error else "Policy denied code change proposal",
+                "tool_result_summary": "code change proposal not created",
+            }
+
+        receipt = render_receipt(goal_contract, envelope, verification_errors, tool_result)
+        ledger_record = None
+        if self.ledger is not None:
+            ledger_record = self.ledger.append_record(
+                receipt=receipt,
+                envelope=envelope,
+                verification_errors=verification_errors,
+                tool_result=tool_result,
+            )
+        result = {
+            "goal_contract": goal_contract,
+            "proposal": proposal,
+            "envelope": envelope,
+            "verification_errors": verification_errors,
+            "tool_result": tool_result,
+            "receipt": receipt,
+        }
+        if code_artifact is not None:
+            result["code_change_proposal"] = code_artifact.to_dict()
         if ledger_record is not None:
             result["ledger_record"] = ledger_record
         return result

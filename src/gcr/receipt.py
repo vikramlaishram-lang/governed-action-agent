@@ -43,6 +43,7 @@ def create_receipt(
         "evidence_references": envelope.get("evidence_references", []),
         "evidence_gaps": envelope.get("evidence_gap_summary", []),
         "github_pr": _github_pr_summary(tool_result),
+        "code_change_proposal": _code_change_summary(tool_result),
         "record_hash": envelope["record_hash"],
         "created_at": datetime.now(UTC).isoformat(),
     }
@@ -77,4 +78,19 @@ def _github_pr_summary(tool_result: dict) -> dict | None:
         "evidence_hash": snapshot["evidence_hash"],
         "checks_passing": snapshot["checks_passing"],
         "risk_flags": snapshot["risk_flags"],
+    }
+
+
+def _code_change_summary(tool_result: dict) -> dict | None:
+    proposal = tool_result.get("code_change_proposal")
+    if not proposal:
+        return None
+    return {
+        "proposal_artifact_id": proposal["proposal_artifact_id"],
+        "target_files": proposal["target_files"],
+        "change_intent": proposal["change_intent"],
+        "diff_hash": proposal["diff_hash"],
+        "risk_flags": proposal["risk_flags"],
+        "requires_review": proposal["requires_review"],
+        "applied_to_real_repo": proposal["applied_to_real_repo"],
     }

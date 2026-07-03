@@ -23,6 +23,10 @@ def classify_consequence(user_request: str) -> str:
         return "PRODUCTION_STATE_CHANGE"
     if "delete" in lowered or "rm -rf" in lowered or "remove file" in lowered:
         return "IRREVERSIBLE_DELETE"
+    if "workflow" in lowered or "github workflow" in lowered or "ci yaml" in lowered:
+        return "WORKFLOW_CHANGE"
+    if "propose readme update" in lowered or "update readme" in lowered or "patch readme" in lowered:
+        return "CODE_CHANGE"
     if "run tests" in lowered or "pytest" in lowered or "test suite" in lowered:
         return "LOCAL_COMPUTATION"
     if any(term in lowered for term in ("write", "edit", "modify")):

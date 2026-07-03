@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "code_change_proposal_v0.1.schema.json",
+  "title": "Code Change Proposal v0.1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "proposal_artifact_id",
+    "proposal_id",
+    "agent_id",
+    "user_request",
+    "target_files",
+    "change_intent",
+    "sandbox_path",
+    "diff_text",
+    "diff_hash",
+    "created_at",
+    "risk_flags",
+    "requires_review",
+    "applied_to_real_repo"
+  ],
+  "properties": {
+    "schema_version": { "const": "code_change_proposal_v0.1" },
+    "proposal_artifact_id": { "type": "string" },
+    "proposal_id": { "type": "string" },
+    "agent_id": { "type": "string" },
+    "user_request": { "type": "string" },
+    "target_files": { "type": "array", "items": { "type": "string" } },
+    "change_intent": { "type": "string" },
+    "sandbox_path": { "type": "string" },
+    "diff_text": { "type": "string" },
+    "diff_hash": { "type": "string" },
+    "created_at": { "type": "string" },
+    "risk_flags": { "type": "array", "items": { "type": "string" } },
+    "requires_review": { "type": "boolean" },
+    "applied_to_real_repo": { "const": false }
+  },
+  "additionalProperties": false
+}

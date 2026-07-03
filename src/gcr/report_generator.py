@@ -67,6 +67,7 @@ def generate_report_summary(
             "executed_actions": [],
         },
         "github_pr_evidence": [],
+        "code_change_proposals": [],
         "public_claims_allowed": [],
         "limitations": _limitations(),
     }
@@ -96,6 +97,17 @@ def generate_report_summary(
         github_pr = receipt.get("github_pr") or _github_pr_from_tool(record.get("tool_result", {}))
         if github_pr:
             summary["github_pr_evidence"].append(github_pr)
+        code_change = receipt.get("code_change_proposal")
+        if code_change:
+            code_change = dict(code_change)
+            code_change.update(
+                {
+                    "proposal_id": receipt.get("proposal_id"),
+                    "decision": receipt.get("decision"),
+                    "execution_status": receipt.get("execution_status"),
+                }
+            )
+            summary["code_change_proposals"].append(code_change)
 
     summary["public_claims_allowed"] = derive_public_claims(summary)
     return summary
@@ -139,6 +151,9 @@ def generate_markdown_report(summary: dict) -> str:
     lines.append("")
     lines.append("## GitHub PR Evidence")
     lines.extend(_github_bullets(summary["github_pr_evidence"]))
+    lines.append("")
+    lines.append("## Code Change Proposals")
+    lines.extend(_code_change_bullets(summary["code_change_proposals"]))
     lines.append("")
     lines.append("## Public Claims Allowed by Evidence")
     lines.extend(f"- {claim}" for claim in summary["public_claims_allowed"])
@@ -187,6 +202,10 @@ def derive_public_claims(summary: dict) -> list[str]:
         claims.append("No execution-without-ALLOW violation was detected during replay.")
     if summary["github_pr_evidence"]:
         claims.append("The report includes read-only GitHub PR evidence snapshots.")
+    if summary.get("code_change_proposals"):
+        claims.append("The report includes sandboxed code-change proposal records.")
+        if all(item.get("applied_to_real_repo") is False for item in summary["code_change_proposals"]):
+            claims.append("The recorded code-change proposals indicate applied_to_real_repo=false.")
     return claims
 
 
@@ -242,6 +261,15 @@ def _github_bullets(items: list[dict]) -> list[str]:
         return ["- none"]
     return [
         f"- {item['owner']}/{item['repo']}#{item['pr_number']} checks_passing={str(item['checks_passing']).lower()} risk_flags={','.join(item['risk_flags']) or 'none'}"
+        for item in items
+    ]
+
+
+def _code_change_bullets(items: list[dict]) -> list[str]:
+    if not items:
+        return ["- none"]
+    return [
+        f"- {','.join(item['target_files'])} decision={item['decision']} applied_to_real_repo={str(item['applied_to_real_repo']).lower()} diff_hash={item['diff_hash']}"
         for item in items
     ]
 
