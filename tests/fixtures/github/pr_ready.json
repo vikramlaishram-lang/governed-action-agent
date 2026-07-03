@@ -1,0 +1,47 @@
+{
+  "owner": "vikramlaishram-lang",
+  "repo": "governed-action-agent",
+  "pr_number": 42,
+  "title": "Add safe README update",
+  "state": "open",
+  "author": "test-contributor",
+  "base_ref": "main",
+  "head_ref": "docs/readme-update",
+  "mergeable": true,
+  "changed_files_count": 3,
+  "additions": 40,
+  "deletions": 5,
+  "files": [
+    {
+      "filename": "README.md",
+      "status": "modified",
+      "additions": 20,
+      "deletions": 2,
+      "patch": "do not persist this patch"
+    },
+    {
+      "filename": "docs/example.md",
+      "status": "added",
+      "additions": 15,
+      "deletions": 0
+    },
+    {
+      "filename": "tests/test_example.py",
+      "status": "added",
+      "additions": 5,
+      "deletions": 3
+    }
+  ],
+  "checks": [
+    {
+      "name": "tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "lint",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
+}

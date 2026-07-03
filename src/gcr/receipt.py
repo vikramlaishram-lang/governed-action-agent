@@ -40,6 +40,9 @@ def create_receipt(
         "tool_status": tool_result.get("tool_status"),
         "tool_summary": _summarize_tool_result(tool_result),
         "tool_result_summary": _summarize_tool_result(tool_result),
+        "evidence_references": envelope.get("evidence_references", []),
+        "evidence_gaps": envelope.get("evidence_gap_summary", []),
+        "github_pr": _github_pr_summary(tool_result),
         "record_hash": envelope["record_hash"],
         "created_at": datetime.now(UTC).isoformat(),
     }
@@ -61,3 +64,17 @@ def _summarize_tool_result(tool_result: dict) -> str:
     if name in {"git_diff_real", "run_tests_real"}:
         return f"{name}:{status}:returncode {tool_result.get('returncode')}"
     return f"{name}:{status}"
+
+
+def _github_pr_summary(tool_result: dict) -> dict | None:
+    snapshot = tool_result.get("github_pr_snapshot")
+    if not snapshot:
+        return None
+    return {
+        "owner": snapshot["owner"],
+        "repo": snapshot["repo"],
+        "pr_number": snapshot["pr_number"],
+        "evidence_hash": snapshot["evidence_hash"],
+        "checks_passing": snapshot["checks_passing"],
+        "risk_flags": snapshot["risk_flags"],
+    }

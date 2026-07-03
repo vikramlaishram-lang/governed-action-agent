@@ -32,6 +32,9 @@
     "tool_status",
     "tool_summary",
     "tool_result_summary",
+    "evidence_references",
+    "evidence_gaps",
+    "github_pr",
     "record_hash",
     "created_at"
   ],
@@ -64,6 +67,19 @@
     "tool_status": { "type": "string" },
     "tool_summary": { "type": "string" },
     "tool_result_summary": { "type": "string" },
+    "evidence_references": { "type": "array", "items": { "type": "string" } },
+    "evidence_gaps": { "type": "array", "items": { "type": "string" } },
+    "github_pr": {
+      "type": ["object", "null"],
+      "properties": {
+        "owner": { "type": "string" },
+        "repo": { "type": "string" },
+        "pr_number": { "type": "integer" },
+        "evidence_hash": { "type": "string" },
+        "checks_passing": { "type": "boolean" },
+        "risk_flags": { "type": "array", "items": { "type": "string" } }
+      }
+    },
     "record_hash": { "type": "string" },
     "created_at": { "type": "string" }
   },

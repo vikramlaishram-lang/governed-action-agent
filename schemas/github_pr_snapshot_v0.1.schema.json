@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "github_pr_snapshot_v0.1.schema.json",
+  "title": "GitHub PR Snapshot v0.1",
+  "type": "object",
+  "required": ["schema_version", "source", "owner", "repo", "pr_number", "title", "state", "author", "base_ref", "head_ref", "mergeable", "changed_files_count", "additions", "deletions", "files", "checks", "checks_passing", "risk_flags", "fetched_at", "evidence_hash"],
+  "properties": {
+    "schema_version": { "const": "github_pr_snapshot_v0.1" },
+    "source": { "enum": ["FIXTURE", "GITHUB_API"] },
+    "owner": { "type": "string" },
+    "repo": { "type": "string" },
+    "pr_number": { "type": "integer", "minimum": 1 },
+    "title": { "type": "string" },
+    "state": { "type": "string" },
+    "author": { "type": "string" },
+    "base_ref": { "type": "string" },
+    "head_ref": { "type": "string" },
+    "mergeable": { "type": ["boolean", "null"] },
+    "changed_files_count": { "type": "integer", "minimum": 0 },
+    "additions": { "type": "integer", "minimum": 0 },
+    "deletions": { "type": "integer", "minimum": 0 },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["filename", "status", "additions", "deletions"],
+        "properties": {
+          "filename": { "type": "string" },
+          "status": { "type": "string" },
+          "additions": { "type": "integer", "minimum": 0 },
+          "deletions": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status", "conclusion"],
+        "properties": {
+          "name": { "type": "string" },
+          "status": { "type": "string" },
+          "conclusion": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "checks_passing": { "type": "boolean" },
+    "risk_flags": { "type": "array", "items": { "type": "string" } },
+    "fetched_at": { "type": "string" },
+    "evidence_hash": { "type": "string" }
+  },
+  "additionalProperties": false
+}

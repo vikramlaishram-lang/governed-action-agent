@@ -1,0 +1,36 @@
+{
+  "owner": "vikramlaishram-lang",
+  "repo": "governed-action-agent",
+  "pr_number": 44,
+  "title": "Touch sensitive files",
+  "state": "open",
+  "author": "test-contributor",
+  "base_ref": "main",
+  "head_ref": "config/sensitive",
+  "mergeable": true,
+  "changed_files_count": 2,
+  "additions": 4,
+  "deletions": 1,
+  "files": [
+    {
+      "filename": ".env",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1,
+      "patch": "SECRET=do-not-store"
+    },
+    {
+      "filename": "app/config.py",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "tests",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "owner": "vikramlaishram-lang",
+  "repo": "governed-action-agent",
+  "pr_number": 43,
+  "title": "Add failing check example",
+  "state": "open",
+  "author": "test-contributor",
+  "base_ref": "main",
+  "head_ref": "ci/failing",
+  "mergeable": true,
+  "changed_files_count": 2,
+  "additions": 12,
+  "deletions": 1,
+  "files": [
+    {
+      "filename": "README.md",
+      "status": "modified",
+      "additions": 10,
+      "deletions": 1
+    },
+    {
+      "filename": "tests/test_example.py",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "tests",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "lint",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
+}

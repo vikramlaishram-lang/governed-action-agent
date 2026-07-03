@@ -35,6 +35,10 @@ def main(argv: list[str] | None = None) -> int:
     ask_parser = subparsers.add_parser("ask")
     ask_parser.add_argument("request")
 
+    inspect_parser = subparsers.add_parser("inspect-pr")
+    inspect_parser.add_argument("github_pr_url")
+    inspect_parser.add_argument("--fixture", default=None)
+
     subparsers.add_parser("verify-ledger")
     subparsers.add_parser("demo")
 
@@ -50,6 +54,8 @@ def main(argv: list[str] | None = None) -> int:
             return _cmd_verify_ledger()
         if args.command == "demo":
             return _cmd_demo()
+        if args.command == "inspect-pr":
+            return _cmd_inspect_pr(args.github_pr_url, args.fixture)
     except FileExistsError as exc:
         print(f"GAA_ERROR: {exc}")
         return 1
@@ -132,6 +138,35 @@ def _cmd_verify_ledger() -> int:
         return 0
     print(f"ERRORS: {len(summary['errors'])}")
     return 1
+
+
+def _cmd_inspect_pr(pr_url: str, fixture_path: str | None) -> int:
+    root, config, paths = _load_initialized_project()
+    hmac_key = _hmac_key_or_error(config)
+    agent = GovernedAgent(
+        root_path=root,
+        ledger_path=paths["ledger_path"],
+        ledger_auth_mode=config["ledger_auth_mode"],
+        ledger_hmac_key=hmac_key,
+        ledger_key_id=config.get("ledger_key_id"),
+        policy_path=paths["policy_path"],
+    )
+    result = agent.inspect_github_pr(
+        pr_url,
+        fixture_path=fixture_path,
+        github_token=os.environ.get("GITHUB_TOKEN"),
+    )
+    snapshot = result["github_pr_snapshot"]
+    risk_flags = ",".join(snapshot["risk_flags"]) if snapshot["risk_flags"] else "none"
+    print(f"PR_DECISION: {result['envelope']['decision']}")
+    print(f"PR_OWNER: {snapshot['owner']}")
+    print(f"PR_REPO: {snapshot['repo']}")
+    print(f"PR_NUMBER: {snapshot['pr_number']}")
+    print(f"PR_CHECKS_PASSING: {str(snapshot['checks_passing']).lower()}")
+    print(f"PR_RISK_FLAGS: {risk_flags}")
+    print(f"PR_EVIDENCE_RECORDED: {str(bool(snapshot['evidence_hash'])).lower()}")
+    print(f"LEDGER_APPENDED: {str('ledger_record' in result).lower()}")
+    return 0
 
 
 def _cmd_demo() -> int:

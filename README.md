@@ -163,6 +163,48 @@ gaa verify-ledger
 
 M7 still blocks real deployment, secret access, destructive actions, network calls, and arbitrary shell execution.
 
+### M8 GitHub PR Read-Only Integration
+
+M8 adds:
+
+- read-only GitHub PR inspection
+- PR evidence snapshots
+- changed-file metadata
+- checks/status evidence
+- risk flags
+- PR receipts
+- ledger append/replay for PR inspection
+
+M8 still does not add:
+
+- comments
+- merges
+- PR approvals
+- workflow dispatch
+- GitHub writes
+- production release execution
+
+Commands:
+
+```bash
+PYTHONPATH=src python -m pytest -q
+PYTHONPATH=src python demo/run_governed_agent_demo.py
+PYTHONPATH=src python demo/run_m3_controlled_local_tool_demo.py
+PYTHONPATH=src python demo/run_m4_policy_review_token_demo.py
+PYTHONPATH=src python demo/run_m5_receipt_ledger_replay_demo.py
+PYTHONPATH=src python demo/run_m6_hmac_signed_ledger_demo.py
+PYTHONPATH=src python demo/run_m7_cli_packaging_demo.py
+PYTHONPATH=src python demo/run_m8_github_pr_readonly_demo.py
+```
+
+CLI example:
+
+```bash
+PYTHONPATH=src python -m gcr_agent.cli init
+PYTHONPATH=src python -m gcr_agent.cli inspect-pr https://github.com/vikramlaishram-lang/governed-action-agent/pull/42 --fixture tests/fixtures/github/pr_ready.json
+PYTHONPATH=src python -m gcr_agent.cli verify-ledger
+```
+
 ## Out Of Scope
 
 - live production deployment
