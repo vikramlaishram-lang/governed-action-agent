@@ -81,6 +81,11 @@ def generate_report_summary(
         },
         "github_pr_evidence": [],
         "code_change_proposals": [],
+        "agent_runs": {
+            "total_agent_runs": 0,
+            "model_decision_claims_ignored": 0,
+            "traces": [],
+        },
         "public_claims_allowed": [],
         "limitations": _limitations(),
     }
@@ -126,6 +131,21 @@ def generate_report_summary(
                 }
             )
             summary["code_change_proposals"].append(code_change)
+        agent_run = receipt.get("agent_run")
+        if agent_run:
+            summary["agent_runs"]["total_agent_runs"] += 1
+            if agent_run.get("model_decision_claim_ignored") is True:
+                summary["agent_runs"]["model_decision_claims_ignored"] += 1
+            summary["agent_runs"]["traces"].append(
+                {
+                    "trace_id": agent_run.get("trace_id"),
+                    "model_provider": agent_run.get("model_provider"),
+                    "model_intent": agent_run.get("model_intent"),
+                    "requested_tool": agent_run.get("requested_tool"),
+                    "decision": receipt.get("decision"),
+                    "receipt_id": receipt.get("receipt_id"),
+                }
+            )
 
     summary["public_claims_allowed"] = derive_public_claims(summary)
     return summary
@@ -181,6 +201,11 @@ def generate_markdown_report(summary: dict) -> str:
     lines.append("## Code Change Proposals")
     lines.extend(_code_change_bullets(summary["code_change_proposals"]))
     lines.append("")
+    lines.append("## Agent Runs")
+    lines.append(f"- Total agent runs: {summary['agent_runs']['total_agent_runs']}")
+    lines.append(f"- Model decision claims ignored: {summary['agent_runs']['model_decision_claims_ignored']}")
+    lines.extend(_agent_run_bullets(summary["agent_runs"]["traces"]))
+    lines.append("")
     lines.append("## Public Claims Allowed by Evidence")
     lines.extend(f"- {claim}" for claim in summary["public_claims_allowed"])
     lines.append("")
@@ -234,6 +259,8 @@ def derive_public_claims(summary: dict) -> list[str]:
             claims.append("The recorded code-change proposals indicate applied_to_real_repo=false.")
     if summary.get("reviewer_identity", {}).get("approved_actions_with_verified_identity", 0) > 0:
         claims.append("The report includes reviewer-approved actions with local reviewer identity verification.")
+    if summary.get("agent_runs", {}).get("total_agent_runs", 0) > 0:
+        claims.append("The report includes LLM/planner-backed agent runs routed through governance.")
     return claims
 
 
@@ -298,6 +325,15 @@ def _code_change_bullets(items: list[dict]) -> list[str]:
         return ["- none"]
     return [
         f"- {','.join(item['target_files'])} decision={item['decision']} applied_to_real_repo={str(item['applied_to_real_repo']).lower()} diff_hash={item['diff_hash']}"
+        for item in items
+    ]
+
+
+def _agent_run_bullets(items: list[dict]) -> list[str]:
+    if not items:
+        return ["- none"]
+    return [
+        f"- {item['trace_id']} intent={item['model_intent']} decision={item['decision']} receipt={item['receipt_id']}"
         for item in items
     ]
 

@@ -11,7 +11,9 @@ from gcr.replay_verifier import verify_ledger
 from gcr.reviewer_registry import load_reviewer_registry
 from gcr.viewer_generator import write_viewer_bundle
 
+from .agent_runtime import GovernedAgentRuntime
 from .governed_agent import GovernedAgent
+from .llm_client import FakeLLMClient, OpenAICompatibleLLMClient
 from .project_config import (
     DEFAULT_CONFIG_DIR,
     DEFAULT_CONFIG_FILE,
@@ -38,6 +40,13 @@ def main(argv: list[str] | None = None) -> int:
 
     ask_parser = subparsers.add_parser("ask")
     ask_parser.add_argument("request")
+
+    agent_parser = subparsers.add_parser("agent")
+    agent_parser.add_argument("task")
+    agent_parser.add_argument("--fake-llm", action="store_true")
+    agent_parser.add_argument("--llm-provider", choices=["fake", "openai-compatible"], default=None)
+    agent_parser.add_argument("--trace", action="store_true")
+    agent_parser.add_argument("--output-json", action="store_true")
 
     inspect_parser = subparsers.add_parser("inspect-pr")
     inspect_parser.add_argument("github_pr_url")
@@ -68,6 +77,8 @@ def main(argv: list[str] | None = None) -> int:
             return _cmd_status()
         if args.command == "ask":
             return _cmd_ask(args.request)
+        if args.command == "agent":
+            return _cmd_agent(args)
         if args.command == "verify-ledger":
             return _cmd_verify_ledger()
         if args.command == "demo":
@@ -147,6 +158,36 @@ def _cmd_ask(user_request: str) -> int:
     print(f"EXECUTION_STATUS: {result['envelope']['execution_status']}")
     print(f"RECEIPT_ID: {result['receipt']['receipt_id']}")
     print(f"LEDGER_APPENDED: {str('ledger_record' in result).lower()}")
+    return 0
+
+
+def _cmd_agent(args: argparse.Namespace) -> int:
+    root, config, paths = _load_initialized_project()
+    hmac_key = _hmac_key_or_error(config)
+    agent = GovernedAgent(
+        root_path=root,
+        ledger_path=paths["ledger_path"],
+        ledger_auth_mode=config["ledger_auth_mode"],
+        ledger_hmac_key=hmac_key,
+        ledger_key_id=config.get("ledger_key_id"),
+        policy_path=paths["policy_path"],
+        reviewer_registry_path=paths["reviewer_registry_path"],
+    )
+    provider = args.llm_provider or ("fake" if args.fake_llm else None)
+    llm_client = OpenAICompatibleLLMClient() if provider == "openai-compatible" else FakeLLMClient()
+    result = GovernedAgentRuntime(root=root, governed_agent=agent, llm_client=llm_client).run_task(args.task)
+    if args.output_json:
+        print(json.dumps(result, sort_keys=True))
+        return 0
+    print("AGENT_RUN: true")
+    print("MODEL_PROPOSAL_PARSED: true")
+    print(f"GOVERNANCE_DECISION: {result['decision']}")
+    print(f"CONSEQUENCE: {result['consequence_class']}")
+    print(f"RECEIPT_ID: {result['receipt_id']}")
+    print(f"LEDGER_APPENDED: {str(result['ledger_appended']).lower()}")
+    print("REAL_REPO_MODIFIED: false")
+    if args.trace:
+        print(f"TRACE_ID: {result['trace']['trace_id']}")
     return 0
 
 

@@ -76,6 +76,7 @@ class GovernedAgent:
         goal_contract: dict,
         proposal: dict,
         review_token: dict | None = None,
+        agent_run: dict | None = None,
     ) -> dict:
         policy_result = apply_policy(
             proposal,
@@ -97,6 +98,8 @@ class GovernedAgent:
         envelope["outcome_status"] = simulation["outcome_status"]
         tool_result = simulation["tool_result"]
         receipt = render_receipt(goal_contract, envelope, verification_errors, tool_result)
+        if agent_run is not None:
+            receipt["agent_run"] = agent_run
         ledger_record = None
         if self.ledger is not None:
             ledger_record = self.ledger.append_record(
@@ -118,12 +121,18 @@ class GovernedAgent:
             result["ledger_record"] = ledger_record
         return result
 
-    def handle_request(self, user_request: str, review_token: dict | None = None) -> dict:
+    def handle_request(
+        self,
+        user_request: str,
+        review_token: dict | None = None,
+        agent_run: dict | None = None,
+    ) -> dict:
         prepared = self.prepare_request(user_request)
         return self.evaluate_proposal(
             prepared["goal_contract"],
             prepared["proposal"],
             review_token=review_token,
+            agent_run=agent_run,
         )
 
     def inspect_github_pr(
@@ -212,6 +221,7 @@ class GovernedAgent:
         *,
         review_token: dict | None = None,
         prepared: dict | None = None,
+        agent_run: dict | None = None,
     ) -> dict:
         prepared = prepared or self.prepare_request(user_request)
         goal_contract = prepared["goal_contract"]
@@ -277,6 +287,8 @@ class GovernedAgent:
             }
 
         receipt = render_receipt(goal_contract, envelope, verification_errors, tool_result)
+        if agent_run is not None:
+            receipt["agent_run"] = agent_run
         ledger_record = None
         if self.ledger is not None:
             ledger_record = self.ledger.append_record(

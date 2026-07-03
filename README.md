@@ -89,6 +89,7 @@ PUBLIC_DEMO_PASS: true
 - `init`
 - `status`
 - `ask`
+- `agent`
 - `propose-change`
 - `inspect-pr`
 - `report`
@@ -102,6 +103,21 @@ PUBLIC_DEMO_PASS: true
 - report markdown/json: `.governed-agent/reports/`
 - viewer index/data: `.governed-agent/viewer/`
 - sample artifacts: `examples/`
+
+## Real Agent Runtime
+
+`gaa agent "<task>"` adds the real agent core. The runtime collects safe repository context, calls an LLM/planner interface, parses a structured model proposal, normalizes it, and routes it through the existing governance layer before any bounded tool can run.
+
+The model proposal is untrusted. Governance still decides. The model cannot directly set `ALLOW`, cannot set execution status, and cannot self-authorize execution.
+
+Deterministic demos and tests use `FakeLLMClient`:
+
+```bash
+PYTHONPATH=src python -m gcr_agent.cli agent "Read README.md" --fake-llm --trace
+PYTHONPATH=src python demo/run_real_agent_core_demo.py
+```
+
+An optional provider can be wired later with `GAA_LLM_BASE_URL`, `GAA_LLM_API_KEY`, and `GAA_LLM_MODEL`. Public demo and release status remain local evaluation only.
 
 ## Problem It Solves
 
