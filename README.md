@@ -82,6 +82,7 @@ PUBLIC_DEMO_PASS: true
 | M12 | Reviewer identity hardening | Complete |
 | M13 | Local receipt viewer UI | Complete |
 | M14 | Local release package and public demo | Complete |
+| M15 | External reproduction and review packet | Prepared for external review |
 
 ## CLI Commands
 
@@ -448,6 +449,45 @@ PYTHONPATH=src python -m gcr_agent.cli ask "Read README.md"
 PYTHONPATH=src python -m gcr_agent.cli ask "Read .env"
 PYTHONPATH=src python -m gcr_agent.cli viewer
 ```
+
+### M15 External Reproduction and Review Packet
+
+Purpose: prepare an external reproduction packet so an independent reviewer can clone the repo, run local checks, compare expected outputs, and record an attestation.
+
+Packet location:
+
+- `docs/external_review/`
+- `examples/external_review/`
+
+Reviewer commands:
+
+```bash
+PYTHONPATH=src python -m pytest -q
+PYTHONPATH=src python scripts/run_public_demo.py
+PYTHONPATH=src python scripts/validate_release_package.py
+PYTHONPATH=src python scripts/validate_external_review_packet.py
+```
+
+Packet generation command:
+
+```bash
+PYTHONPATH=src python scripts/generate_external_review_packet.py
+```
+
+Packet validation command:
+
+```bash
+PYTHONPATH=src python scripts/validate_external_review_packet.py
+```
+
+Status:
+
+```text
+M15_PACKET_PREPARED_FOR_EXTERNAL_REVIEW
+M15_EXTERNAL_REVIEW_NOT_YET_COMPLETE
+```
+
+M15 prepares the packet. It does not say external review is done.
 
 ## Out Of Scope
 

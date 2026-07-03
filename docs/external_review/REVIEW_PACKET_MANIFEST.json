@@ -1,0 +1,32 @@
+{
+  "schema_version": "external_review_packet_manifest_v0.1",
+  "milestone": "M15_EXTERNAL_REPRODUCTION_AND_REVIEW_PACKET",
+  "packet_status": "PREPARED_FOR_EXTERNAL_REVIEW",
+  "external_review_complete": false,
+  "source_release_tag": "v0.14.0-local-release",
+  "required_files": [
+    "docs/external_review/README.md",
+    "docs/external_review/REVIEWER_INSTRUCTIONS.md",
+    "docs/external_review/FRESH_CLONE_REPRODUCTION_CHECKLIST.md",
+    "docs/external_review/EXPECTED_OUTPUTS.md",
+    "docs/external_review/REVIEWER_ATTESTATION_FORM.md",
+    "docs/external_review/EXTERNAL_FINDINGS_LEDGER.md",
+    "docs/external_review/FAILURE_LOG_TEMPLATE.md",
+    "docs/external_review/REVIEW_SCOPE_AND_LIMITATIONS.md"
+  ],
+  "required_commands": [
+    "PYTHONPATH=src python -m pytest -q",
+    "PYTHONPATH=src python scripts/run_public_demo.py",
+    "PYTHONPATH=src python scripts/validate_release_package.py",
+    "PYTHONPATH=src python scripts/validate_external_review_packet.py"
+  ],
+  "non_claims": [
+    "external audit completion",
+    "production safety",
+    "complete security",
+    "legal/compliance certification",
+    "SSO/OIDC identity verification",
+    "real deployment control",
+    "real GitHub write integration"
+  ]
+}
