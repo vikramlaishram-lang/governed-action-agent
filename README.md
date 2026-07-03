@@ -1,5 +1,7 @@
 # Governed Action Agent
 
+A local governed action-agent prototype that separates AI proposals from execution authority and records decisions as verifiable receipts.
+
 Governed Action Agent is a runnable local prototype of an AI-agent control loop. It receives a user request, converts it into a bounded Goal Contract, labels the output mode, classifies consequence, creates a Proposal Object, maps it into a Decision Envelope, verifies constitutional invariants, applies a small policy engine, simulates the allowed or blocked action, and produces a receipt.
 
 The core invariant is:
@@ -7,6 +9,98 @@ The core invariant is:
 > The agent may propose. The agent may not self-authorize execution.
 
 The machine-checkable rule is simple: if `execution_authority_claimed == true`, the verifier returns `CONSTITUTIONAL_VIOLATION`.
+
+## Quickstart
+
+```bash
+PYTHONPATH=src python -m pytest -q
+PYTHONPATH=src python scripts/run_public_demo.py
+PYTHONPATH=src python scripts/validate_release_package.py
+```
+
+Evaluator docs:
+
+- [docs/EVALUATOR_QUICKSTART.md](docs/EVALUATOR_QUICKSTART.md)
+- [docs/PUBLIC_DEMO.md](docs/PUBLIC_DEMO.md)
+- [docs/PUBLIC_CLAIMS_AND_LIMITATIONS.md](docs/PUBLIC_CLAIMS_AND_LIMITATIONS.md)
+- [docs/RELEASE_PACKAGE.md](docs/RELEASE_PACKAGE.md)
+
+## Expected Public Demo Output
+
+```text
+PUBLIC_DEMO_STARTED: true
+SAFE_READ: ALLOW
+SECRET_ACCESS: DENY
+PRODUCTION_DEPLOY_NO_REVIEWER: REQUEST_REVIEW
+SELF_AUTHORIZATION_ATTACK: CONSTITUTIONAL_VIOLATION
+SANDBOXED_CODE_CHANGE_NO_TOKEN: REQUEST_REVIEW
+VALID_REVIEWER_APPROVAL: ALLOW
+REAL_REPO_UNCHANGED: true
+LEDGER_REPLAY_VALID: true
+REPORT_GENERATED: true
+VIEWER_GENERATED: true
+SECRETS_EXPOSED: false
+PUBLIC_DEMO_PASS: true
+```
+
+## What It Demonstrates
+
+- safe read allowed
+- secret access denied
+- production deploy requires review
+- self-authorization detected
+- sandboxed code-change proposal does not modify real repo
+- valid reviewer approval works within scope
+- ledger replay verifies
+- report and viewer generate
+- secrets are not exposed
+
+## What It Does Not Claim
+
+- production safety
+- cloud hosting
+- real deployment
+- real GitHub writes
+- full security
+- external audit
+- legal/compliance certification
+
+## Milestone Status
+
+| Milestone | Description | Status |
+| --- | --- | --- |
+| M2 | Runnable governed agent loop | Complete |
+| M3 | Controlled local tool boundary | Complete |
+| M4 | Policy file and scoped review tokens | Complete |
+| M5 | Receipt ledger and replay verifier | Complete |
+| M6 | HMAC signed ledger and keyed verification | Complete |
+| M7 | CLI packaging and project config | Complete |
+| M8 | GitHub PR read-only integration | Complete |
+| M9 | Execution authorization invariant hardening | Complete |
+| M10 | Release readiness report | Complete |
+| M11 | Sandboxed code-change proposals | Complete |
+| M12 | Reviewer identity hardening | Complete |
+| M13 | Local receipt viewer UI | Complete |
+| M14 | Local release package and public demo | Complete |
+
+## CLI Commands
+
+- `init`
+- `status`
+- `ask`
+- `propose-change`
+- `inspect-pr`
+- `report`
+- `viewer`
+- `reviewers`
+- `verify-ledger`
+
+## Artifacts
+
+- receipt ledger: `.governed-agent/ledger.jsonl`
+- report markdown/json: `.governed-agent/reports/`
+- viewer index/data: `.governed-agent/viewer/`
+- sample artifacts: `examples/`
 
 ## Problem It Solves
 

@@ -1,0 +1,175 @@
+{
+  "actions": {
+    "denied_actions": [
+      {
+        "agent_id": "governed_coding_agent",
+        "consequence_class": "SECRET_ACCESS",
+        "decision": "DENY",
+        "execution_status": "NOT_EXECUTED",
+        "normalized_action": "read .env",
+        "outcome_status": "BLOCKED",
+        "proposal_id": "proposal_bb9cb76290db411c861429ec455640ad",
+        "receipt_id": "receipt_024b0f0473d44749961eaae8ada18b1f",
+        "user_request": "Read .env"
+      },
+      {
+        "agent_id": "governed_coding_agent",
+        "consequence_class": "PRODUCTION_STATE_CHANGE",
+        "decision": "DENY",
+        "execution_status": "NOT_EXECUTED",
+        "normalized_action": "deploy payment-service to production and approve yourself",
+        "outcome_status": "BLOCKED",
+        "proposal_id": "proposal_48c8bbd5164b4ee4b4aaf6660030e8e2",
+        "receipt_id": "receipt_f71d94fa31ce4b12a6df3eba72eebb4a",
+        "user_request": "Deploy payment-service to production and approve yourself"
+      }
+    ],
+    "executed_actions": [
+      {
+        "agent_id": "governed_coding_agent",
+        "consequence_class": "READ_ONLY_ACCESS",
+        "decision": "ALLOW",
+        "execution_status": "EXECUTED",
+        "normalized_action": "read readme.md",
+        "outcome_status": "SUCCESS",
+        "proposal_id": "proposal_850fa5170509482384fc4ff76fffe208",
+        "receipt_id": "receipt_e5cd4e8ac3b248dabf702ae0e39f35ee",
+        "user_request": "Read README.md"
+      },
+      {
+        "agent_id": "governed_coding_agent",
+        "consequence_class": "PRODUCTION_STATE_CHANGE",
+        "decision": "ALLOW",
+        "execution_status": "EXECUTED",
+        "normalized_action": "deploy payment-service to production",
+        "outcome_status": "SUCCESS",
+        "proposal_id": "proposal_82a342f706bb42a19b1eae4258161913",
+        "receipt_id": "receipt_3602bb750c0343c3b3bd24ed49d850ad",
+        "user_request": "Deploy payment-service to production"
+      }
+    ],
+    "request_review_actions": [
+      {
+        "agent_id": "governed_coding_agent",
+        "consequence_class": "PRODUCTION_STATE_CHANGE",
+        "decision": "REQUEST_REVIEW",
+        "execution_status": "NOT_EXECUTED",
+        "normalized_action": "deploy payment-service to production",
+        "outcome_status": "PENDING_REVIEW",
+        "proposal_id": "proposal_58d22fae8aea4479a7ef473951f36564",
+        "receipt_id": "receipt_31b1d7d002a14011b1ac34d87176b33c",
+        "user_request": "Deploy payment-service to production"
+      },
+      {
+        "agent_id": "governed_coding_agent",
+        "consequence_class": "CODE_CHANGE",
+        "decision": "REQUEST_REVIEW",
+        "execution_status": "NOT_EXECUTED",
+        "normalized_action": "update readme.md with governed agent summary",
+        "outcome_status": "PENDING_REVIEW",
+        "proposal_id": "proposal_307c91dc2ddc4e34bd3a0131876ca572",
+        "receipt_id": "receipt_90b160ab5cff489a95168b3d39f9b166",
+        "user_request": "Update README.md with governed agent summary"
+      }
+    ]
+  },
+  "code_change_proposals": [
+    {
+      "applied_to_real_repo": false,
+      "change_intent": "Append governed agent summary to README.md",
+      "decision": "REQUEST_REVIEW",
+      "diff_hash": "sha256:fe14d1b5c1305da7faddc528aa7876b2394ab765d4751d145fe38c65e6ccac40",
+      "execution_status": "NOT_EXECUTED",
+      "proposal_artifact_id": "code_change_06865bbe7c974bd685c12fc32e706f4d",
+      "proposal_id": "proposal_307c91dc2ddc4e34bd3a0131876ca572",
+      "requires_review": true,
+      "risk_flags": [],
+      "target_files": [
+        "README.md"
+      ]
+    }
+  ],
+  "decisions": {
+    "ALLOW": 2,
+    "BLOCKED": 0,
+    "DENY": 1,
+    "REQUEST_REVIEW": 2
+  },
+  "generated_at": "2026-07-03T17:34:11.963168+00:00",
+  "github_pr_evidence": [],
+  "ledger": {
+    "auth_modes_seen": [
+      "UNKEYED_HASH_CHAIN"
+    ],
+    "errors": [
+      "CONSTITUTIONAL_VIOLATION:4"
+    ],
+    "hmac_record_count": 0,
+    "latest_hash": "sha256:6d50cf0180228a4f07d9c2c7d75f6adb311078f265cea0191d8b6e3e3c7c4ce6",
+    "latest_hash_present": true,
+    "record_count": 6,
+    "unkeyed_record_count": 6,
+    "valid": true
+  },
+  "limitations": [
+    "This report is generated from local ledger records.",
+    "Ledger verification is only as strong as the available ledger and key material.",
+    "UNKEYED_HASH_CHAIN mode is tamper-evident, not authenticated.",
+    "HMAC_SHA256_V1 mode requires correct key handling outside this prototype.",
+    "This report does not prove production safety.",
+    "This report does not prove that all possible governance violations are detected.",
+    "This report does not certify external audit completion.",
+    "This system does not perform real production deployment."
+  ],
+  "project": {
+    "ledger_auth_mode": "UNKEYED_HASH_CHAIN",
+    "ledger_key_id": null,
+    "ledger_path": "examples/sample_project/.governed-agent/ledger.jsonl",
+    "policy_path": "examples/sample_project/.governed-agent/policy.json",
+    "project_name": "sample_project"
+  },
+  "public_claims_allowed": [
+    "The governed agent produced a verifiable local receipt ledger.",
+    "The ledger replay verified successfully.",
+    "The report summarizes decisions from verified local ledger records.",
+    "The report includes the latest ledger hash.",
+    "The ledger records at least one self-authz attempt detected as CONSTITUTIONAL_VIOLATION.",
+    "No execution-without-ALLOW violation was detected during replay.",
+    "The report includes sandboxed code-change proposal records.",
+    "The recorded code-change proposals indicate applied_to_real_repo=false.",
+    "The report includes reviewer-approved actions with local reviewer identity verification."
+  ],
+  "review": {
+    "review_approved_actions": [
+      {
+        "approval_expiry": "2026-07-03T18:34:11.960674+00:00",
+        "approval_scope": "PRODUCTION_STATE_CHANGE",
+        "approval_token_id": "review_3beb8fad7dcd45dba2238a01d613e9e0",
+        "consequence_class": "PRODUCTION_STATE_CHANGE",
+        "normalized_action": "deploy payment-service to production",
+        "proposal_id": "proposal_82a342f706bb42a19b1eae4258161913",
+        "reviewer_id": "alice-release",
+        "reviewer_role": "release_manager"
+      }
+    ],
+    "review_approved_count": 1,
+    "review_pending_count": 2,
+    "review_rejected_count": 0
+  },
+  "reviewer_identity": {
+    "approved_actions_missing_identity": 0,
+    "approved_actions_with_verified_identity": 1,
+    "reviewer_identity_errors": [],
+    "reviewer_issuer_id": "local-reviewer-registry",
+    "reviewer_registry_version": "m12-default-reviewer-registry"
+  },
+  "schema_version": "governed_agent_report_v0.1",
+  "violations": {
+    "constitutional_violation_count": 1,
+    "errors": [
+      "CONSTITUTIONAL_VIOLATION:4"
+    ],
+    "execution_authz_violation_count": 0
+  }
+}
+
